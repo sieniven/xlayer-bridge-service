@@ -71,6 +71,11 @@ func start(ctx *cli.Context) error {
 		log.Fatal(err)
 	}
 
+	c.SyncDB.Password, err = getDBPassword(c.SyncDB.Password)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	setupLog(c.Log)
 	err = db.RunMigrations(c.SyncDB)
 	if err != nil {
