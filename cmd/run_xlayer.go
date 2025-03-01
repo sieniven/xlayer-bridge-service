@@ -341,6 +341,16 @@ func initCommon(ctx *cli.Context) (*config.Config, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	c.BridgeServer.DB.Password, err = getDBPassword(c.BridgeServer.DB.Password)
+	if err != nil {
+		log.Fatal(err)
+	}
+	c.SyncDB.Password, err = getDBPassword(c.SyncDB.Password)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	setupLog(c.Log)
 	apolloconfig.SetLogger()
 	return c, nil

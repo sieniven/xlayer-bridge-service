@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"runtime"
+	"strings"
 
 	zkevmbridgeservice "github.com/0xPolygonHermez/zkevm-bridge-service"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/bridgectrl"
@@ -23,7 +24,10 @@ import (
 	"github.com/0xPolygonHermez/zkevm-node/jsonrpc/client"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/urfave/cli/v2"
+	kms "gitlab.okg.com/okcoin-commons/ok-kms-go-client/kms"
 )
+
+const encryptedPrefix = "{encrypt}"
 
 func logVersion() {
 	log.Infow("Starting application",
@@ -36,6 +40,21 @@ func logVersion() {
 	)
 }
 
+func getDBPassword(dbPassword string) (string, error) {
+	if strings.HasPrefix(dbPassword, encryptedPrefix) {
+		if err := kms.Init(); err != nil {
+			return "", fmt.Errorf("failed to init KMS: %w", err)
+		}
+		secretKey := strings.TrimPrefix(dbPassword, encryptedPrefix)
+		realPass, err := kms.GetAwsSecretValue(secretKey)
+		if err != nil {
+			return "", fmt.Errorf("failed to fetch DB pass from KMS: %w", err)
+		}
+		return realPass, nil
+	}
+	return dbPassword, nil // Return original password if not encrypted
+}
+
 func start(ctx *cli.Context) error {
 	configFilePath := ctx.String(flagCfg)
 	network := ctx.String(flagNetwork)
@@ -44,6 +63,17 @@ func start(ctx *cli.Context) error {
 	if err != nil {
 		return err
 	}
+
+	c.BridgeServer.DB.Password, err = getDBPassword(c.BridgeServer.DB.Password)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	c.SyncDB.Password, err = getDBPassword(c.SyncDB.Password)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	setupLog(c.Log)
 	err = db.RunMigrations(c.SyncDB)
 	if err != nil {
