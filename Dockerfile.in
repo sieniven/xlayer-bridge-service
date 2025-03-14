@@ -1,4 +1,4 @@
-FROM online-registry.cn-hongkong.cr.aliyuncs.com/okbase/alpine:3.18.3
+FROM alpine:3.18.3
 RUN mkdir -p /workspace
 COPY ./dist/xlayer-bridge /app/x1-bridge
 COPY ./test/vectors /app/test/vectors
