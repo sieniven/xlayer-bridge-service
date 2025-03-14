@@ -24,7 +24,7 @@ import (
 	"github.com/0xPolygonHermez/zkevm-node/jsonrpc/client"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/urfave/cli/v2"
-	kms "gitlab.okg.com/okcoin-commons/ok-kms-go-client/kms"
+	"github.com/okx/kms-interface/kms"
 )
 
 const encryptedPrefix = "{encrypt}"
