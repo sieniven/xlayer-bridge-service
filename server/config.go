@@ -25,4 +25,6 @@ type Config struct {
 	Redis redisstorage.Config `mapstructure:"Redis" apollo:"Redis"`
 	// SentinelConfigFilePath is the file path to store the sentinel config
 	SentinelConfigFilePath string `mapstructure:"SentinelConfigFilePath"`
+	// AllowedOrigins is the allowed origins for CORS
+	AllowedOrigins string `mapstructure:"AllowedOrigins"`
 }

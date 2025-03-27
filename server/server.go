@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 
 	"github.com/0xPolygonHermez/zkevm-bridge-service/bridgectrl/pb"
@@ -48,7 +49,7 @@ func RunServer(cfg Config, bridgeService pb.BridgeServiceServer) error {
 	}
 
 	go func() {
-		_ = runRestServer(ctx, cfg.GRPCPort, cfg.HTTPPort)
+		_ = runRestServer(ctx, cfg.GRPCPort, cfg.HTTPPort, cfg.AllowedOrigins)
 	}()
 
 	go func() {
@@ -132,12 +133,19 @@ func preflightHandler(w http.ResponseWriter, r *http.Request) {
 
 // allowCORS allows Cross Origin Resource Sharing from any origin.
 // Don't do this without consideration in production systems.
-func allowCORS(h http.Handler) http.Handler {
+// allowedOrigins allowed origins are configured in the config file. X Layer
+func allowCORS(h http.Handler, allowedOrigins map[string]bool) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if origin := r.Header.Get("Origin"); origin != "" {
-			w.Header().Set("Access-Control-Allow-Origin", origin)
-			if r.Method == "OPTIONS" && r.Header.Get("Access-Control-Request-Method") != "" {
-				preflightHandler(w, r)
+			if _, ok := allowedOrigins[strings.ToLower(strings.TrimSpace(origin))]; ok {
+				w.Header().Set("Access-Control-Allow-Origin", origin)
+				if r.Method == "OPTIONS" && r.Header.Get("Access-Control-Request-Method") != "" {
+					preflightHandler(w, r)
+					return
+				}
+			} else {
+				log.Warn("Origin not allowed: ", origin)
+				w.WriteHeader(http.StatusForbidden)
 				return
 			}
 		}
@@ -145,7 +153,7 @@ func allowCORS(h http.Handler) http.Handler {
 	})
 }
 
-func runRestServer(ctx context.Context, grpcPort, httpPort string) error {
+func runRestServer(ctx context.Context, grpcPort, httpPort, allowedOriginsList string) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
@@ -176,10 +184,12 @@ func runRestServer(ctx context.Context, grpcPort, httpPort string) error {
 		return err
 	}
 
+	allowedOrigins := getAllowedOrigins(allowedOriginsList)
+
 	srv := &http.Server{
 		ReadTimeout: 1 * time.Second, //nolint:gomnd
 		Addr:        ":" + httpPort,
-		Handler:     allowCORS(httpMux),
+		Handler:     allowCORS(httpMux, allowedOrigins),
 	}
 
 	c := make(chan os.Signal, 1)
