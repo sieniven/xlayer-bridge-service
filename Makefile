@@ -327,12 +327,13 @@ restart: stop run ## Executes `make stop` and `make run` commands
 .PHONY: run
 run: ## runs all services
 	$(RUN_DBS)
-	$(RUN_L1_NETWORK)
-	sleep 5
-	$(RUN_ZKPROVER)
-	sleep 3
-	$(RUN_NODE)
-	sleep 7
+	# $(RUN_L1_NETWORK)
+	# sleep 5
+	# $(RUN_ZKPROVER)
+	# sleep 3
+	# $(RUN_NODE)
+	# sleep 7
+	sleep 1
 	$(RUN_BRIDGE)
 
 .PHONY: run-1
