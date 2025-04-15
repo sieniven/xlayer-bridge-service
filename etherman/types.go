@@ -2,6 +2,7 @@ package etherman
 
 import (
 	"math/big"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -29,6 +30,9 @@ type GlobalExitRoot struct {
 	GlobalExitRoot common.Hash
 	NetworkID      uint32
 	ID             uint64
+
+	// XLayer
+	Time time.Time
 }
 
 // Deposit struct
@@ -48,6 +52,11 @@ type Deposit struct {
 	Metadata           []byte
 	// it is only used for the bridge service
 	ReadyForClaim bool
+
+	// XLayer
+	Time                time.Time
+	ReadyTime           time.Time
+	DestContractAddress common.Address
 }
 
 // Claim struct
@@ -63,6 +72,9 @@ type Claim struct {
 	BlockNumber        uint64
 	NetworkID          uint32
 	TxHash             common.Hash
+
+	// XLayer
+	Time time.Time
 }
 
 // TokenWrapped struct

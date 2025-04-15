@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	zkevmbridgeservice "github.com/0xPolygonHermez/zkevm-bridge-service"
 	cli "github.com/urfave/cli/v2"
+
+	zkevmbridgeservice "github.com/0xPolygonHermez/zkevm-bridge-service"
 )
 
 const (
@@ -49,6 +50,27 @@ func main() {
 			Aliases: []string{},
 			Usage:   "Run the zkevm bridge",
 			Action:  start,
+			Flags:   flags,
+		},
+		{
+			Name:    "runAPI",
+			Aliases: []string{},
+			Usage:   "Run the xlayer bridge API server",
+			Action:  runAPI,
+			Flags:   flags,
+		},
+		{
+			Name:    "runTask",
+			Aliases: []string{},
+			Usage:   "Run the xlayer bridge tasks, including synchronizer, claimtxman, kafka consumer",
+			Action:  runTask,
+			Flags:   flags,
+		},
+		{
+			Name:    "runPushTask",
+			Aliases: []string{},
+			Usage:   "Run the xlayer bridge push tasks (monitor the block/batch number and push change event to FE)",
+			Action:  runPushTask,
 			Flags:   flags,
 		},
 	}
