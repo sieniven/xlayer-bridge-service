@@ -33,3 +33,18 @@ func (s *bridgeService) setDurationForL2Deposit(ctx context.Context, l2AvgCommit
 	}
 	tx.EstimateTime = uint32(duration)
 }
+
+// For testing purposes
+func (s *bridgeService) GetFakePushMessages(ctx context.Context, req *pb.GetFakePushMessagesRequest) (*pb.GetFakePushMessagesResponse, error) {
+	if messagePushProducer == nil {
+		return &pb.GetFakePushMessagesResponse{
+			Code: uint32(pb.ErrorCode_ERROR_DEFAULT),
+			Msg:  "producer is nil",
+		}, nil
+	}
+
+	return &pb.GetFakePushMessagesResponse{
+		Code: uint32(pb.ErrorCode_ERROR_OK),
+		Data: messagePushProducer.GetFakeMessages(req.Topic),
+	}, nil
+}
