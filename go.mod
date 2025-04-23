@@ -6,6 +6,8 @@ toolchain go1.23.5
 
 require (
 	github.com/IBM/sarama v1.45.1
+	github.com/alibaba/sentinel-golang v1.0.4
+	github.com/alibaba/sentinel-golang/pkg/datasource/apollo v0.0.0-20241224061304-f4c2c5964666
 	github.com/apolloconfig/agollo/v4 v4.0.9
 	github.com/barkimedes/go-deepcopy v0.0.0-20220514131651-17c30cfc62df
 	github.com/ethereum/go-ethereum v1.15.5
@@ -23,6 +25,7 @@ require (
 	github.com/lib/pq v1.10.9
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nacos-group/nacos-sdk-go v1.1.4
+	github.com/okx/mock_kms v1.0.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.18.0
 	github.com/prometheus/client_model v0.5.0
@@ -32,7 +35,6 @@ require (
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.10.0
 	github.com/urfave/cli/v2 v2.27.6
-	gitlab.okg.com/okcoin-commons/ok-kms-go-client v1.0.1
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.33.0
 	golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa
@@ -160,6 +162,7 @@ require (
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/shirou/gopsutil v3.21.4-0.20210419000835-c7a38de76ee5+incompatible // indirect
+	github.com/shirou/gopsutil/v3 v3.21.6 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/skeema/knownhosts v1.2.1 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
@@ -185,6 +188,7 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 	rsc.io/tmplfunc v0.0.3 // indirect
 )
 

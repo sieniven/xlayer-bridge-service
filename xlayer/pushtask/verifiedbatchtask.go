@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/redis/go-redis/v9"
 
-	"github.com/0xPolygonHermez/zkevm-bridge-service/config/apolloconfig"
+	"github.com/0xPolygonHermez/zkevm-bridge-service/config/apollo_xlayer"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/log"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/redisstorage"
 )
@@ -18,10 +18,10 @@ const (
 )
 
 var (
-	minVerifyDuration     = apolloconfig.NewIntEntry[uint64]("pushtask.minVerifyDuration", 2)      //nolint:gomnd
-	defaultVerifyDuration = apolloconfig.NewIntEntry[uint64]("pushtask.defaultVerifyDuration", 10) //nolint:gomnd
-	maxVerifyDuration     = apolloconfig.NewIntEntry[uint64]("pushtask.maxVerifyDuration", 60)     //nolint:gomnd
-	verifyDurationListLen = apolloconfig.NewIntEntry("pushtask.verifyDurationListLen", 5)          //nolint:gomnd
+	minVerifyDuration     = apolloconfig.NewIntEntry[uint64]("pushtask.minVerifyDuration", 2)      //nolint:mnd
+	defaultVerifyDuration = apolloconfig.NewIntEntry[uint64]("pushtask.defaultVerifyDuration", 10) //nolint:mnd
+	maxVerifyDuration     = apolloconfig.NewIntEntry[uint64]("pushtask.maxVerifyDuration", 60)     //nolint:mnd
+	verifyDurationListLen = apolloconfig.NewIntEntry("pushtask.verifyDurationListLen", 5)          //nolint:mnd
 )
 
 type VerifiedBatchHandler struct {

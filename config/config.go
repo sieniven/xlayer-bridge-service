@@ -10,19 +10,12 @@ import (
 
 	"github.com/0xPolygonHermez/zkevm-bridge-service/bridgectrl"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/claimtxman"
-	"github.com/0xPolygonHermez/zkevm-bridge-service/config/apolloconfig"
-	"github.com/0xPolygonHermez/zkevm-bridge-service/config/businessconfig"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/db"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/etherman"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/log"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/metrics"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/server"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/synchronizer"
-	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/coinmiddleware"
-	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/iprestriction"
-	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/messagepush"
-	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/nacos"
-	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/tokenlogoinfo"
 )
 
 // Config struct
@@ -37,15 +30,6 @@ type Config struct {
 	// Configuration of the metrics service where metrics will be published
 	Metrics metrics.Config
 	NetworkConfig
-
-	// X Layer
-	Apollo                 apolloconfig.Config
-	NacosConfig            nacos.Config
-	BusinessConfig         businessconfig.Config `apollo:"BusinessConfig"`
-	IPRestriction          iprestriction.Config  `apollo:"IPRestriction"`
-	TokenLogoServiceConfig tokenlogoinfo.Config  `apollo:"TokenLogoServiceConfig"`
-	CoinKafkaConsumer      coinmiddleware.Config `apollo:"CoinKafkaConsumer"`
-	MessagePushProducer    messagepush.Config    `apollo:"MessagePushProducer"`
 }
 
 // Load loads the configuration

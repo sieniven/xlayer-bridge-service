@@ -9,7 +9,7 @@ import (
 	"github.com/redis/go-redis/v9"
 
 	"github.com/0xPolygonHermez/zkevm-bridge-service/bridgectrl/pb"
-	"github.com/0xPolygonHermez/zkevm-bridge-service/config/apolloconfig"
+	"github.com/0xPolygonHermez/zkevm-bridge-service/config/apollo_xlayer"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/etherman"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/log"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/utils"
@@ -26,9 +26,9 @@ const (
 )
 
 var (
-	minCommitDuration     = apolloconfig.NewIntEntry[uint64]("pushtask.minCommitDuration", 2)      //nolint:gomnd
-	defaultCommitDuration = apolloconfig.NewIntEntry[uint64]("pushtask.defaultCommitDuration", 10) //nolint:gomnd
-	commitDurationListLen = apolloconfig.NewIntEntry[int]("pushtask.commitDurationListLen", 5)     //nolint:gomnd
+	minCommitDuration     = apolloconfig.NewIntEntry[uint64]("pushtask.minCommitDuration", 2)      //nolint:mnd
+	defaultCommitDuration = apolloconfig.NewIntEntry[uint64]("pushtask.defaultCommitDuration", 10) //nolint:mnd
+	commitDurationListLen = apolloconfig.NewIntEntry[int]("pushtask.commitDurationListLen", 5)     //nolint:mnd
 )
 
 type CommittedBatchHandler struct {

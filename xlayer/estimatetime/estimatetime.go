@@ -7,7 +7,7 @@ import (
 	"math"
 	"time"
 
-	"github.com/0xPolygonHermez/zkevm-bridge-service/config/apolloconfig"
+	"github.com/0xPolygonHermez/zkevm-bridge-service/config/apollo_xlayer"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/log"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/utils"
 )

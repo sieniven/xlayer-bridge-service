@@ -1,6 +1,6 @@
 package utils
 
-import "github.com/0xPolygonHermez/zkevm-bridge-service/config/apolloconfig"
+import "github.com/0xPolygonHermez/zkevm-bridge-service/config/apollo_xlayer"
 
 var (
 	// L1TargetBlockConfirmations is the number of block confirmations need to wait for the transaction to be synced from L1 to L2

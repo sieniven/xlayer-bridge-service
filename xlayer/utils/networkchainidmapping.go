@@ -6,10 +6,10 @@ type NetworkChainIdMapping struct {
 
 var networkChainIdMapping NetworkChainIdMapping
 
-func InitChainIdManager(networks []uint, chainIds []uint) {
+func InitChainIdManager(networks []uint32, chainIds []uint) {
 	var chainIDs = make(map[uint]uint32)
 	for i, network := range networks {
-		chainIDs[network] = uint32(chainIds[i])
+		chainIDs[uint(network)] = uint32(chainIds[i]) // nolint:gosec
 	}
 	networkChainIdMapping = NetworkChainIdMapping{
 		chainIDs: chainIDs,

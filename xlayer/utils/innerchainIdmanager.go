@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"github.com/0xPolygonHermez/zkevm-bridge-service/config/businessconfig"
+	"github.com/0xPolygonHermez/zkevm-bridge-service/config/business_xlayer"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/log"
 )
 
