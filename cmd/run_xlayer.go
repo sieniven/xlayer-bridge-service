@@ -125,7 +125,7 @@ func runAPI(ctx *cli.Context) error {
 		l2Auths[i] = auth
 	}
 
-	RegisterNacos(c.NacosConfig)
+	registerNacos(c.NacosConfig)
 
 	if c.Apollo.Enabled {
 		err = sentinel.InitApolloDataSource(c.Apollo)
@@ -176,7 +176,7 @@ func waitUnlessInterrupt() {
 	<-ch
 }
 
-func RegisterNacos(cfg nacos.Config) {
+func registerNacos(cfg nacos.Config) {
 	var err error
 	if cfg.NacosUrls != "" {
 		err = nacos.InitNacosClient(cfg.NacosUrls, cfg.NamespaceId, cfg.ApplicationName, cfg.ExternalListenAddr)
