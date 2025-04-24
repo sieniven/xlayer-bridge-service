@@ -1,9 +1,8 @@
 package config
 
 import (
-	"github.com/ethereum/go-ethereum/common"
-
 	"github.com/0xPolygonHermez/zkevm-bridge-service/log"
+	"github.com/ethereum/go-ethereum/common"
 )
 
 // NetworkConfig is the configuration struct for the different environments.
