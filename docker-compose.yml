@@ -1,7 +1,4 @@
 version: '3.5'
-networks:
-  default:
-    name: erigon
 services:
   zkevm-state-db:
     container_name: zkevm-state-db
@@ -72,7 +69,7 @@ services:
       - ./test/test.keystore.aggregator:/pk/keystore.aggregator
       - ./test/config/node/config.zkevm.node.toml:/app/config.toml
       - ./test/config/node/genesis.local.json:/app/genesis.json
-    command:
+    command: 
       - "/bin/sh"
       - "-c"
       - "/app/zkevm-node approve --network custom --custom-network-file /app/genesis.json --am 115792089237316195423570985008687907853269984665640564039457584007913129639935 -y --cfg /app/config.toml --key-store-path /pk/keystore.sequencer --password testonly &&
@@ -95,7 +92,7 @@ services:
       - ./test/test.keystore.aggregator:/pk/keystore.aggregator
       - ./test/config/node/config.zkevm.node.toml:/app/config.toml
       - ./test/config/node/genesis.local-v1tov2.json:/app/genesis.json
-    command:
+    command: 
       - "/bin/sh"
       - "-c"
       - "/app/zkevm-node approve --network custom --custom-network-file /app/genesis.json --am 115792089237316195423570985008687907853269984665640564039457584007913129639935 -y --cfg /app/config.toml --key-store-path /pk/keystore.sequencer --password testonly &&
@@ -118,7 +115,7 @@ services:
       - ./test/test.keystore.aggregator:/pk/keystore.aggregator
       - ./test/config/node/config.zkevm.node.toml:/app/config.toml
       - ./test/config/node/genesis.local-v1tov2.json:/app/genesis.json
-    command:
+    command: 
       - "/bin/sh"
       - "-c"
       - "/app/zkevm-node run --network custom --custom-network-file /app/genesis.json --cfg /app/config.toml --components \"aggregator\""
@@ -212,10 +209,8 @@ services:
     command:
       - "/bin/sh"
       - "-c"
-      # - "/app/test-deploy-tool deployClaimCompressor --url \"http://zkevm-node:8123\" --bridgeAddress \"0xFe12ABaa190Ef0c8638Ee0ba9F828BF41368Ca0E\" --walletFile /pk/keystore.claimtxmanager --password \"testonly\" &&
-      #    /app/zkevm-bridge run --cfg /app/config.toml"
-      - "/app/test-deploy-tool deployClaimCompressor --url \"http://xlayer-rpc:8545\" --bridgeAddress \"0x3a277Fa4E78cc1266F32E26c467F99A8eAEfF7c3\" --walletFile /pk/keystore.claimtxmanager --password \"testonly\" &&
-         /app/zkevm-bridge run --cfg /app/config.toml"
+      - "/app/test-deploy-tool deployClaimCompressor --url \"http://zkevm-node:8123\" --bridgeAddress \"0xFe12ABaa190Ef0c8638Ee0ba9F828BF41368Ca0E\" --walletFile /pk/keystore.claimtxmanager --password \"testonly\" &&
+        /app/zkevm-bridge run --cfg /app/config.toml"
 
   zkevm-bridge-service-v1tov2:
     container_name: zkevm-bridge-service-v1tov2
@@ -247,13 +242,13 @@ services:
       - "/bin/sh"
       - "-c"
       - "/app/zkevm-bridge run --cfg /app/config.toml"
-
+  
   zkevm-mock-l1-network-multi-rollup:
     container_name: zkevm-mock-l1-network-multi-rollup
     image: hermeznetwork/geth-zkevm-contracts:elderberry-2-rollups-fork.9-geth1.13.11
     ports:
       - 8545:8545
-
+  
   zkevm-state-db-2:
     container_name: zkevm-state-db-2
     image: postgres
@@ -368,7 +363,7 @@ services:
       - ./test/test.keystore.aggregator-2:/pk/keystore.aggregator
       - ./test/config/node/config.zkevm.node.toml:/app/config.toml
       - ./test/config/node/genesis.local-2.json:/app/genesis.json
-    command:
+    command: 
       - "/bin/sh"
       - "-c"
       - "echo 'zkevm-node-2' && /app/zkevm-node approve --network custom --custom-network-file /app/genesis.json --am 115792089237316195423570985008687907853269984665640564039457584007913129639935 -y --cfg /app/config.toml --key-store-path /pk/keystore.sequencer --password testonly &&
@@ -389,7 +384,7 @@ services:
       - ./test/test.keystore.aggregator:/pk/keystore.aggregator
       - ./test/config/node/config.zkevm.node.toml:/app/config.toml
       - ./test/config/node/genesis.local-1.json:/app/genesis.json
-    command:
+    command: 
       - "/bin/sh"
       - "-c"
       - "echo 'zkevm-node-1' && /app/zkevm-node approve --network custom --custom-network-file /app/genesis.json --am 115792089237316195423570985008687907853269984665640564039457584007913129639935 -y --cfg /app/config.toml --key-store-path /pk/keystore.sequencer --password testonly &&
@@ -427,7 +422,7 @@ services:
       - "/bin/sh"
       - "-c"
       - "/app/zkevm-bridge run --cfg /app/config.toml"
-
+  
   zkevm-bridge-service-2:
     container_name: zkevm-bridge-service-2
     image: zkevm-bridge-service
@@ -459,7 +454,7 @@ services:
       - "/bin/sh"
       - "-c"
       - "/app/zkevm-bridge run --cfg /app/config.toml"
-
+  
   zkevm-bridge-service-3:
     container_name: zkevm-bridge-service-3
     image: zkevm-bridge-service
