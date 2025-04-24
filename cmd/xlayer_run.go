@@ -1,14 +1,11 @@
 package main
 
 import (
-	"os"
-	"os/signal"
-
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/urfave/cli/v2"
 
-	"github.com/0xPolygonHermez/zkevm-bridge-service/config"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/db"
+	"github.com/0xPolygonHermez/zkevm-bridge-service/etherman"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/log"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/metrics"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/server"
@@ -17,26 +14,21 @@ import (
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/iprestriction"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/localcache"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/messagepush"
-	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/nacos"
+	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/pushtask"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/redisstorage"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/sentinel"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/tokenlogoinfo"
 
 	apolloconfig "github.com/0xPolygonHermez/zkevm-bridge-service/config/apollo_xlayer"
-	kmsDB "github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/kms"
 	xlayerUtils "github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/utils"
 )
 
 func runAPI(ctx *cli.Context) error {
-	configFilePath := ctx.String(flagCfg)
-	network := ctx.String(flagNetwork)
-	cfg, err := config.Load(configFilePath, network)
+	c, err := setupConfig(ctx)
 	if err != nil {
 		return err
 	}
 
-	// NOTE: Load XLayer config over the upstream configuration.
-	c, err := config.LoadXLayerCfg(cfg)
 	apolloconfig.SetLogger()
 	setupLog(c.UpstreamCfg.Log)
 
@@ -73,21 +65,12 @@ func runAPI(ctx *cli.Context) error {
 		return err
 	}
 
-	// NOTE: for fake producer
 	var messagePushProducer messagepush.KafkaProducer
 	if c.MessagePushProducer.Enabled {
-		log.Infof("message push producer's switch is open, so init producer!")
-		messagePushProducer, err = messagepush.NewKafkaProducer(c.MessagePushProducer)
+		messagePushProducer, err = setupKafkaProducer(c.MessagePushProducer)
 		if err != nil {
-			log.Error(err)
 			return err
 		}
-		defer func() {
-			err := messagePushProducer.Close()
-			if err != nil {
-				log.Errorf("close kafka producer error: %v", err)
-			}
-		}()
 	}
 
 	l1ChainId := c.Etherman.L1ChainId
@@ -162,6 +145,64 @@ func runAPI(ctx *cli.Context) error {
 }
 
 func runPushTask(ctx *cli.Context) error {
+	c, err := setupConfig(ctx)
+	if err != nil {
+		return err
+	}
+
+	apiStorage, err := db.NewStorage(c.UpstreamCfg.BridgeServer.DB)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	redisStorage, err := redisstorage.NewRedisStorage(c.BridgeServer.Redis)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	var messagePushProducer messagepush.KafkaProducer
+	if c.MessagePushProducer.Enabled {
+		messagePushProducer, err = setupKafkaProducer(c.MessagePushProducer)
+		if err != nil {
+			return err
+		}
+	}
+
+	l1Etherman, err := etherman.NewClient(c.UpstreamCfg.Etherman,
+		c.UpstreamCfg.NetworkConfig.PolygonBridgeAddress,
+		c.UpstreamCfg.NetworkConfig.PolygonZkEVMGlobalExitRootAddress,
+		c.UpstreamCfg.NetworkConfig.PolygonRollupManagerAddress)
+	rollupID, err := l1Etherman.PolygonRollupManager.RollupAddressToID(
+		&bind.CallOpts{Pending: false},
+		c.UpstreamCfg.NetworkConfig.PolygonRollupManagerAddress,
+	)
+
+	// Initialize the push task for L1 block num change
+	l1BlockNumTask, err := pushtask.NewL1BlockNumTask(
+		c.UpstreamCfg.Etherman.L1URL, apiStorage, redisStorage, messagePushProducer, uint(rollupID))
+	if err != nil {
+		return err
+	}
+
+	// Initialize the push task for sync l2 commit batch
+	syncCommitBatchTask, err := pushtask.NewCommittedBatchHandler(
+		c.UpstreamCfg.Etherman.L2URLs[0], apiStorage, redisStorage, messagePushProducer, uint(rollupID))
+	if err != nil {
+		return err
+	}
+
+	// Initialize the push task for sync verify batch
+	syncVerifyBatchTask, err := pushtask.NewVerifiedBatchHandler(c.UpstreamCfg.Etherman.L2URLs[0], redisStorage)
+	if err != nil {
+		return err
+	}
+
+	go l1BlockNumTask.Start(ctx.Context)
+	go syncCommitBatchTask.Start(ctx.Context)
+	go syncVerifyBatchTask.Start(ctx.Context)
+
 	waitUnlessInterrupt()
 	return nil
 }
@@ -172,32 +213,5 @@ func runTask(ctx *cli.Context) error {
 	// messagebridge.InitEURCProcessor(c.BusinessConfig.EURCContractAddresses, c.BusinessConfig.EURCTokenAddresses)
 
 	waitUnlessInterrupt()
-	return nil
-}
-
-func waitUnlessInterrupt() {
-	ch := make(chan os.Signal, 1)
-	signal.Notify(ch, os.Interrupt)
-	<-ch
-}
-
-func registerNacos(cfg nacos.Config) {
-	var err error
-	if cfg.NacosUrls != "" {
-		err = nacos.InitNacosClient(cfg.NacosUrls, cfg.NamespaceId, cfg.ApplicationName, cfg.ExternalListenAddr)
-	}
-	log.Debugf("Init nacos NacosUrls[%s] NamespaceId[%s] ApplicationName[%s] ExternalListenAddr[%s] Error[%v]", cfg.NacosUrls, cfg.NamespaceId, cfg.ApplicationName, cfg.ExternalListenAddr, err)
-}
-
-func loadKmsPasswords(c *config.Config) error {
-	var err error
-	c.BridgeServer.DB.Password, err = kmsDB.GetDBPassword(c.BridgeServer.DB.Password)
-	if err != nil {
-		log.Fatal(err)
-	}
-	c.SyncDB.Password, err = kmsDB.GetDBPassword(c.SyncDB.Password)
-	if err != nil {
-		log.Fatal(err)
-	}
 	return nil
 }
