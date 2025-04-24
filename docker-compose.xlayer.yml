@@ -1,0 +1,47 @@
+version: '3.5'
+
+networks:
+  default:
+    external:
+      name: erigon
+
+services:
+  xlayer-bridge-service-api:
+    container_name: xlayer-bridge-service-api
+    image: xlayer-bridge-service
+    ports:
+      - 8080:8080
+      - 9090:9090
+      - 9300:9091
+    environment:
+      - ZKEVM_BRIDGE_DATABASE_USER=test_user
+      - ZKEVM_BRIDGE_DATABASE_PASSWORD=test_password
+      - ZKEVM_BRIDGE_DATABASE_NAME=test_db
+      - ZKEVM_BRIDGE_DATABASE_HOST=zkevm-bridge-db
+      - ZKEVM_BRIDGE_DATABASE_PORT=5432
+    volumes:
+      - ./test/test.keystore.claimtx:/pk/keystore.claimtxmanager
+      - ./config/xlayer-api-config.local.toml:/app/config.toml
+      - ./xlayer/sentinel/config.json:/app/sentinel_config.json
+    command:
+      - "/bin/sh"
+      - "-c"
+      - "/app/zkevm-bridge runAPI --cfg /app/config.toml"
+
+  xlayer-bridge-redis:
+    container_name: xlayer-bridge-redis
+    image: redis
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+    expose:
+      - 6379
+    ports:
+      - 6379:6379
+    environment:
+      - REDIS_PASSWORD=my_password
+      - REDIS_PORT=6379
+      - REDIS_DATABASES=8

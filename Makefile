@@ -1,4 +1,5 @@
 include version.mk
+include Makefile.xlayer
 
 DOCKER_COMPOSE := docker compose -f docker-compose.yml
 DOCKER_COMPOSE_STATE_DB := zkevm-state-db

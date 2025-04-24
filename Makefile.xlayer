@@ -1,0 +1,17 @@
+include version.mk
+
+DOCKER_COMPOSE := docker compose -f docker-compose.yml
+DOCKER_COMPOSE_REDIS := xlayer-bridge-redis
+DOCKER_COMPOSE_BRIDGE_API := xlayer-bridge-service-api
+
+RUN_REDIS := $(DOCKER_COMPOSE) up -d $(DOCKER_COMPOSE_REDIS)
+RUN_BRIDGE_API := $(DOCKER_COMPOSE) up -d $(DOCKER_COMPOSE_BRIDGE_API)
+
+build-docker-xl:
+	docker build -t xlayer-bridge-service -f ./Dockerfile .
+
+run-api:
+	$(RUN_REDIS)
+	$(RUN_DBS)
+	sleep 1
+	$(RUN_BRIDGE_API)
