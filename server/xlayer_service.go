@@ -69,6 +69,8 @@ func (s *bridgeService) SetupL2Clients(
 	l2Auths []*bind.TransactOpts,
 	networks []uint32,
 ) *bridgeService {
+	nodeClientsMap = make(map[uint]*utils.Client, len(networks))
+	authMap = make(map[uint]*bind.TransactOpts, len(networks))
 	for i, network := range networks {
 		if i > 0 { // Why skip first index?
 			id := uint(network) // nolint:gosec
