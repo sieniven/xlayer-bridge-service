@@ -2,13 +2,13 @@ version: '3.5'
 
 networks:
   default:
-    external:
-      name: erigon
+    name: erigon
+    external: true
 
 services:
   xlayer-bridge-service-api:
     container_name: xlayer-bridge-service-api
-    image: xlayer-bridge-service
+    image: zkevm-bridge-service
     ports:
       - 8080:8080
       - 9090:9090
