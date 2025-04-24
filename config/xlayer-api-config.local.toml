@@ -69,5 +69,5 @@ StandardChainIds = [195]
 InnerChainIds = [19500]
 
 [MessagePushProducer]
-Enabled = false
+Enabled = true
 UseFakeProducer = true
