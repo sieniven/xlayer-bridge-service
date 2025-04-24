@@ -8,7 +8,6 @@ import (
 	"github.com/urfave/cli/v2"
 
 	"github.com/0xPolygonHermez/zkevm-bridge-service/config"
-	apolloconfig "github.com/0xPolygonHermez/zkevm-bridge-service/config/apollo_xlayer"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/db"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/log"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/metrics"
@@ -16,13 +15,15 @@ import (
 	"github.com/0xPolygonHermez/zkevm-bridge-service/utils"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/estimatetime"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/iprestriction"
-	kmsDB "github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/kms"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/localcache"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/messagepush"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/nacos"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/redisstorage"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/sentinel"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/tokenlogoinfo"
+
+	apolloconfig "github.com/0xPolygonHermez/zkevm-bridge-service/config/apollo_xlayer"
+	kmsDB "github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/kms"
 	xlayerUtils "github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/utils"
 )
 
@@ -37,8 +38,12 @@ func runAPI(ctx *cli.Context) error {
 	// NOTE: Load XLayer config over the upstream configuration.
 	c, err := config.LoadXLayerCfg(cfg)
 	apolloconfig.SetLogger()
-	loadKmsPasswords(c.UpstreamCfg)
 	setupLog(c.UpstreamCfg.Log)
+
+	loadKmsPasswords(c.UpstreamCfg)
+	if err = db.RunMigrations(c.UpstreamCfg.SyncDB); err != nil {
+		return err
+	}
 
 	// Init global vars from config
 	xlayerUtils.InnitOkInnerChainIdMapper(c.BusinessConfig)
