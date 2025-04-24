@@ -45,7 +45,7 @@ func runAPI(ctx *cli.Context) error {
 	iprestriction.InitClient(c.IPRestriction)
 	tokenlogoinfo.InitClient(c.TokenLogoServiceConfig)
 
-	redisStorage, err := redisstorage.NewRedisStorage(c.Redis)
+	redisStorage, err := redisstorage.NewRedisStorage(c.BridgeServer.Redis)
 	if err != nil {
 		log.Error(err)
 		return err

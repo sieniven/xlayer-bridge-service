@@ -21,7 +21,8 @@ type ethermanCfg struct {
 
 type serverCfg struct {
 	// SentinelConfigFilePath is the file path to store the sentinel config
-	SentinelConfigFilePath string `mapstructure:"SentinelConfigFilePath"`
+	SentinelConfigFilePath string              `mapstructure:"SentinelConfigFilePath"`
+	Redis                  redisstorage.Config `apollo:"Redis"`
 }
 
 type metricsCfg struct {
@@ -49,7 +50,6 @@ type XLayerConfig struct {
 	TokenLogoServiceConfig tokenlogoinfo.Config  `apollo:"TokenLogoServiceConfig"`
 	CoinKafkaConsumer      coinmiddleware.Config `apollo:"CoinKafkaConsumer"`
 	MessagePushProducer    messagepush.Config    `apollo:"MessagePushProducer"`
-	Redis                  redisstorage.Config   `apollo:"Redis"`
 }
 
 // Load the same config file, but this time load all X Layer config here.

@@ -31,10 +31,10 @@ AreClaimsBetweenL2sEnabled = false
     GasOffset = 100000
 
 [Etherman]
-# L1URL = "http://zkevm-mock-l1-network:8545"
-# L2URLs = ["http://zkevm-node:8123"] # use by deploy tool
 L1URL = "http://xlayer-mock-l1-network:8545"
 L2URLs = ["http://xlayer-rpc:8545"] # internal network
+L1ChainId = 5 # XLayer
+L2ChainIds = [1001] # XLayer
 
 [Synchronizer]
 SyncInterval = "1s"
@@ -51,6 +51,7 @@ HTTPPort = "8080"
 CacheSize = 100000
 DefaultPageLimit = 25
 MaxPageLimit = 100
+SentinelConfigFilePath = "/app/sentinel_config.json" # XLayer
     [BridgeServer.DB]
     Database = "postgres"
     User = "test_user"
@@ -59,25 +60,69 @@ MaxPageLimit = 100
     Host = "zkevm-bridge-db"
     Port = "5432"
     MaxConns = 20
+    [BridgeServer.Redis] # XLayer
+    IsClusterMode = false
+    Addrs = ["xlayer-bridge-redis:6379"]
+    Username = ""
+    Password = ""
+    DB = 0
+    MockPrice = true
 
 [NetworkConfig]
 GenBlockNumber = 0
-# PolygonBridgeAddress = "0xFe12ABaa190Ef0c8638Ee0ba9F828BF41368Ca0E"
-# PolygonZkEVMGlobalExitRootAddress = "0x8A791620dd6260079BF849Dc5567aDC3F2FdC318"
-# PolygonRollupManagerAddress = "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e"
-# L2ClaimCompressorAddress = "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6"
-# L2PolygonBridgeAddresses = ["0xFe12ABaa190Ef0c8638Ee0ba9F828BF41368Ca0E"]
-# RequireSovereignChainSmcs = [false]
-# L2PolygonZkEVMGlobalExitRootAddresses = ["0xa40d5f56745a118d0906a34e69aec8c0db1cb8fa"]
 PolygonBridgeAddress = "0x3a277Fa4E78cc1266F32E26c467F99A8eAEfF7c3"
 PolygonZkEVMGlobalExitRootAddress = "0xB8cedD4B9eF683f0887C44a6E4312dC7A6e2fcdB"
 PolygonRollupManagerAddress = "0x2d42E2899662EFf08b13eeb65b154b904C7a1c8a"
-L2ClaimCompressorAddress = "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6" # 0x5FbDB2315678afecb367f032d93F642f64180aa3
+L2ClaimCompressorAddress = "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6"
 L2PolygonBridgeAddresses = ["0x3a277Fa4E78cc1266F32E26c467F99A8eAEfF7c3"]
 RequireSovereignChainSmcs = [false]
 L2PolygonZkEVMGlobalExitRootAddresses = ["0xB8cedD4B9eF683f0887C44a6E4312dC7A6e2fcdB"]
 
 [Metrics]
-Enabled = false
+Enabled = true
 Host = "0.0.0.0"
-Port = 8090
+Port = 9091
+Env = "testnet" # XLayer
+
+# XLayer specific
+[Apollo]
+Enabled = false
+AppID = "xlayer-bridge-service"
+Cluster = "default"
+MetaAddress = "http://127.0.0.1:8080"
+Namespaces = ["application"]
+Secret = ""
+IsBackupConfig = true
+
+[NacosConfig]
+NacosUrls = ""
+NamespaceId = "public"
+ApplicationName = ""
+ExternalListenAddr = "127.0.0.1:26659"
+
+[BusinessConfig]
+StandardChainIds = [195]
+InnerChainIds = [19500]
+
+[CoinKafkaConsumer]
+Brokers = []
+Topics = ["explorer_chainAddressPrice_push"]
+ConsumerGroupID = "xlayer-bridge-service"
+InitialOffset = -1
+Username = ""
+Password = ""
+
+[MessagePushProducer]
+Enabled = false
+
+[IPRestriction]
+Enabled = false
+UseNacos = true
+Host = "okcoin-users-service-newex-pre"
+Timeout = "2s"
+
+[TokenLogoServiceConfig]
+Enabled = false
+Scheme = "http"
+LogoServiceNacosName = "testing 123"
+Timeout = "3s"
