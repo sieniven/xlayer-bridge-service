@@ -24,7 +24,7 @@ func (s *bridgeService) setDurationForL2Deposit(ctx context.Context, l2AvgCommit
 	if tx.Status == uint32(pb.TransactionStatus_TX_CREATED) {
 		duration = pushtask.GetLeftCommitTime(depositCreateTime, l2AvgCommitDuration, currTime)
 	} else {
-		duration = pushtask.GetLeftVerifyTime(ctx, redis, tx.BlockNumber, depositCreateTime, l2AvgCommitDuration, l2AvgVerifyDuration, currTime)
+		duration = pushtask.GetLeftVerifyTime(ctx, rsstore, tx.BlockNumber, depositCreateTime, l2AvgCommitDuration, l2AvgVerifyDuration, currTime)
 	}
 	if duration <= 0 {
 		log.Debugf("count EstimateTime for L2 -> L1 over range, so use min default duration: %v", defaultMinDuration)

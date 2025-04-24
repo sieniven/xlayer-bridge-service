@@ -7,7 +7,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/pkg/errors"
-	redisV9 "github.com/redis/go-redis/v9"
+	"github.com/redis/go-redis/v9"
 
 	"github.com/0xPolygonHermez/zkevm-bridge-service/bridgectrl"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/bridgectrl/pb"
@@ -37,17 +37,20 @@ var (
 )
 
 // Put in global variables (separate from struct fields)
-// TODO: REMOVE GLOBAL VARS DUE TO CONCURRENCY ISSUE IN GRPC HANDLERS
+// NOTE: Beware of concurrency issues as gRPC handlers are run inside go routines.
 var (
-	redis               redisstorage.RedisStorage // TODO: rename variable
+	rsstore             redisstorage.RedisStorage
 	mainCoinsCache      localcache.MainCoinsCache
 	messagePushProducer messagepush.KafkaProducer
-	nodeClientsMap      map[uint]*utils.Client
-	authMap             map[uint]*bind.TransactOpts
+
+	// Read-only variables. No need thread-safe.
+	// Initialized once on creation.
+	nodeClientsMap map[uint]*utils.Client
+	authMap        map[uint]*bind.TransactOpts
 )
 
 func (s *bridgeService) WithRedisStorage(storage redisstorage.RedisStorage) *bridgeService {
-	redis = storage
+	rsstore = storage
 	return s
 }
 
@@ -112,7 +115,7 @@ func (s *bridgeService) GetCoinPrice(ctx context.Context, req *pb.GetCoinPriceRe
 	for _, symbol := range req.SymbolInfos {
 		symbol.ChainId = xlUtils.GetStandardChainIdByInnerId(symbol.ChainId)
 	}
-	priceList, err := redis.GetCoinPrice(ctx, req.SymbolInfos)
+	priceList, err := rsstore.GetCoinPrice(ctx, req.SymbolInfos)
 	if err != nil {
 		log.Errorf("get coin price from redis failed for symbol: %v, error: %v", req.SymbolInfos, err)
 		return &pb.CommonCoinPricesResponse{
@@ -176,10 +179,10 @@ func (s *bridgeService) GetPendingTransactions(ctx context.Context, req *pb.GetP
 		deposits = deposits[:limit]
 	}
 
-	l1BlockNum, _ := redis.GetL1BlockNum(ctx)
-	l2CommitBlockNum, _ := redis.GetCommitMaxBlockNum(ctx)
-	l2AvgCommitDuration := pushtask.GetAvgCommitDuration(ctx, redis)
-	l2AvgVerifyDuration := pushtask.GetAvgVerifyDuration(ctx, redis)
+	l1BlockNum, _ := rsstore.GetL1BlockNum(ctx)
+	l2CommitBlockNum, _ := rsstore.GetCommitMaxBlockNum(ctx)
+	l2AvgCommitDuration := pushtask.GetAvgCommitDuration(ctx, rsstore)
+	l2AvgVerifyDuration := pushtask.GetAvgVerifyDuration(ctx, rsstore)
 	currTime := time.Now()
 
 	var pbTransactions []*pb.Transaction
@@ -227,7 +230,7 @@ func (s *bridgeService) GetPendingTransactions(ctx context.Context, req *pb.GetP
 		logoCacheKey := tokenlogoinfo.GetTokenLogoMapKey(transaction.GetBridgeToken(), chainId)
 		transactionMap[logoCacheKey] = append(transactionMap[logoCacheKey], transaction)
 	}
-	tokenlogoinfo.FillLogoInfos(ctx, redis, transactionMap)
+	tokenlogoinfo.FillLogoInfos(ctx, rsstore, transactionMap)
 	return &pb.CommonTransactionsResponse{
 		Code: uint32(pb.ErrorCode_ERROR_OK),
 		Data: &pb.TransactionDetail{HasNext: hasNext, Transactions: pbTransactions},
@@ -259,10 +262,10 @@ func (s *bridgeService) GetAllTransactions(ctx context.Context, req *pb.GetAllTr
 		deposits = deposits[0:limit]
 	}
 
-	l1BlockNum, _ := redis.GetL1BlockNum(ctx)
-	l2CommitBlockNum, _ := redis.GetCommitMaxBlockNum(ctx)
-	l2AvgCommitDuration := pushtask.GetAvgCommitDuration(ctx, redis)
-	l2AvgVerifyDuration := pushtask.GetAvgVerifyDuration(ctx, redis)
+	l1BlockNum, _ := rsstore.GetL1BlockNum(ctx)
+	l2CommitBlockNum, _ := rsstore.GetCommitMaxBlockNum(ctx)
+	l2AvgCommitDuration := pushtask.GetAvgCommitDuration(ctx, rsstore)
+	l2AvgVerifyDuration := pushtask.GetAvgVerifyDuration(ctx, rsstore)
 	currTime := time.Now()
 
 	var pbTransactions []*pb.Transaction
@@ -324,7 +327,7 @@ func (s *bridgeService) GetAllTransactions(ctx context.Context, req *pb.GetAllTr
 		logoCacheKey := tokenlogoinfo.GetTokenLogoMapKey(transaction.GetBridgeToken(), chainId)
 		transactionMap[logoCacheKey] = append(transactionMap[logoCacheKey], transaction)
 	}
-	tokenlogoinfo.FillLogoInfos(ctx, redis, transactionMap)
+	tokenlogoinfo.FillLogoInfos(ctx, rsstore, transactionMap)
 
 	return &pb.CommonTransactionsResponse{
 		Code: uint32(pb.ErrorCode_ERROR_OK),
@@ -550,8 +553,8 @@ func (s *bridgeService) GetReadyPendingTransactions(ctx context.Context, req *pb
 
 func (s *bridgeService) GetLargeTransactionInfos(ctx context.Context, req *pb.LargeTxsRequest) (*pb.LargeTxsResponse, error) {
 	key := utils.GetLargeTxRedisKeySuffix(uint(req.NetworkId), utils.OpRead)
-	txInfos, err := redis.GetLargeTransactions(ctx, key)
-	if err != nil && !errors.Is(err, redisV9.Nil) {
+	txInfos, err := rsstore.GetLargeTransactions(ctx, key)
+	if err != nil && !errors.Is(err, redis.Nil) {
 		log.Errorf("failed to get large tx cache for key: %v", key)
 		return &pb.LargeTxsResponse{
 			Code: uint32(pb.ErrorCode_ERROR_DEFAULT),
