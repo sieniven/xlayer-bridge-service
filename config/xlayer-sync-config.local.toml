@@ -113,11 +113,11 @@ Username = ""
 Password = ""
 
 [MessagePushProducer]
-Enabled = false
+Enabled = true
 
 [IPRestriction]
 Enabled = false
-UseNacos = true
+UseNacos = false
 Host = "okcoin-users-service-newex-pre"
 Timeout = "2s"
 
