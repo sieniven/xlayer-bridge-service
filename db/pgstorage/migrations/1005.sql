@@ -1,4 +1,4 @@
--- In RC14 onwards, the ugstream drops the DB column
+-- In RC14 onwards, the upstream version drops the DB column
 -- from sync.block table. However, our XLayer code
 -- still references this value.
 
