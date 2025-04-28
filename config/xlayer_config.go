@@ -30,6 +30,13 @@ type metricsCfg struct {
 	Env string `mapstructure:"Env"`
 }
 
+type claimTxManCfg struct {
+	// FreeGas enabled whether gas price is 0
+	FreeGas bool `mapstructure:"FreeGas"`
+	// OptClaim enabled store claimTx into storage every deposit
+	OptClaim bool `mapstructure:"OptClaim"`
+}
+
 // We will use this config to wrap the upstream config and load
 // our XLayer specfic values in this struct.
 type XLayerConfig struct {
@@ -38,9 +45,10 @@ type XLayerConfig struct {
 
 	// Configs that overlapped with upstream configs.
 	// Add new fields here instead of adding them to the upstream structs.
-	Etherman     ethermanCfg
-	BridgeServer serverCfg
-	Metrics      metricsCfg
+	Etherman       ethermanCfg
+	BridgeServer   serverCfg
+	Metrics        metricsCfg
+	ClaimTxManager claimTxManCfg
 
 	// Pure XLayer configs
 	Apollo                 apolloconfig.Config

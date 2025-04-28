@@ -20,6 +20,9 @@ type Block struct {
 	Tokens          []TokenWrapped
 	VerifiedBatches []VerifiedBatch
 	ActivateEtrog   []bool
+
+	// XLayer
+	ReceivedAt      time.Time
 }
 
 // GlobalExitRoot struct

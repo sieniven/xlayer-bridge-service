@@ -7,11 +7,13 @@ import (
 	cli "github.com/urfave/cli/v2"
 
 	"github.com/0xPolygonHermez/zkevm-bridge-service/config"
+	"github.com/0xPolygonHermez/zkevm-bridge-service/etherman"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/log"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/messagepush"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/nacos"
 
 	kmsDB "github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/kms"
+	xlayerUtils "github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/utils"
 )
 
 func loadKmsPasswords(c *config.Config) error {
@@ -52,6 +54,17 @@ func setupKafkaProducer(cfg messagepush.Config) (messagepush.KafkaProducer, erro
 		}
 	}()
 	return messagePushProducer, nil
+}
+
+func setupNetworkIDs(networkID uint32, l2Ethermans []*etherman.Client) []uint32 {
+	var networkIDs = []uint32{networkID}
+	for _, cl := range l2Ethermans {
+		networkID := cl.GetNetworkID()
+		log.Infof("l2 network id: %d", networkID)
+		networkIDs = append(networkIDs, networkID)
+		xlayerUtils.InitRollupNetworkId(uint(networkID))
+	}
+	return networkIDs
 }
 
 func waitUnlessInterrupt() {

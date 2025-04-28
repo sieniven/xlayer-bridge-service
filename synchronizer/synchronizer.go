@@ -11,6 +11,8 @@ import (
 	"github.com/0xPolygonHermez/zkevm-bridge-service/log"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/synchronizer/metrics"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/utils/gerror"
+	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/messagepush"
+	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/redisstorage"
 	"github.com/ethereum/go-ethereum/common"
 	pgx "github.com/jackc/pgx/v4"
 )
@@ -41,6 +43,11 @@ type ClientSynchronizer struct {
 	sovereignChain    bool
 	forceSyncChunk    bool
 	waitDuration      time.Duration
+
+	// XLayer
+	messagePushProducer messagepush.KafkaProducer
+	redisStorage        redisstorage.RedisStorage
+	rollupID            uint
 }
 
 // NewSynchronizer creates and initializes an instance of Synchronizer
@@ -110,6 +117,7 @@ func NewSynchronizer(
 // Sync function will read the last state synced and will continue from that point.
 // Sync() will read blockchain events to detect rollup updates
 func (s *ClientSynchronizer) Sync() error {
+	go s.recordLatestBlockNum()
 	startInitialization := time.Now()
 	// If there is no lastEthereumBlock means that sync from the beginning is necessary. If not, it continues from the retrieved ethereum block
 	// Get the latest synced block. If there is no block on db, use genesis block
@@ -240,6 +248,7 @@ func (s *ClientSynchronizer) syncTrustedState() error {
 			exitRoots.MainnetExitRoot,
 			exitRoots.RollupExitRoot,
 		},
+		Time: time.Unix(int64(exitRoots.Timestamp), 0), // XLayer
 	}
 	isUpdated, err := s.storage.AddTrustedGlobalExitRoot(s.ctx, ger, nil)
 	if err != nil {
@@ -838,6 +847,7 @@ func (s *ClientSynchronizer) processGlobalExitRoot(globalExitRoot etherman.Globa
 }
 
 func (s *ClientSynchronizer) processDeposit(deposit etherman.Deposit, blockID uint64, dbTx pgx.Tx) error {
+	s.beforeProcessDeposit(&deposit)
 	deposit.BlockID = blockID
 	deposit.NetworkID = s.networkID
 	depositID, err := s.storage.AddDeposit(s.ctx, &deposit, dbTx)
@@ -864,7 +874,8 @@ func (s *ClientSynchronizer) processDeposit(deposit etherman.Deposit, blockID ui
 		return err
 	}
 	metrics.DepositAmount(deposit.Amount)
-	return nil
+
+	return s.afterProcessDeposit(&deposit, depositID, dbTx)
 }
 
 func (s *ClientSynchronizer) processClaim(claim etherman.Claim, blockID uint64, dbTx pgx.Tx) error {
@@ -882,6 +893,10 @@ func (s *ClientSynchronizer) processClaim(claim etherman.Claim, blockID uint64, 
 		return err
 	}
 	metrics.ClaimAmount(claim.Amount)
+
+	// For X Layer
+	// It shouldn't block the sync process
+	go s.afterProcessClaim(&claim, dbTx)
 	return nil
 }
 
