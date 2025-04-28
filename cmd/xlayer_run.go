@@ -10,7 +10,6 @@ import (
 	"github.com/0xPolygonHermez/zkevm-bridge-service/db"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/etherman"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/log"
-	"github.com/0xPolygonHermez/zkevm-bridge-service/metrics"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/server"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/synchronizer"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/utils"
@@ -20,6 +19,7 @@ import (
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/iprestriction"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/localcache"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/messagepush"
+	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/metrics"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/pushtask"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/redisstorage"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/sentinel"
@@ -35,6 +35,18 @@ func runAPI(ctx *cli.Context) error {
 	c, err := setupConfig(ctx)
 	if err != nil {
 		return err
+	}
+
+	if c.UpstreamCfg.Metrics.Enabled {
+		go metrics.StartMetricsHttpServer(struct {
+			Env  string
+			Host string
+			Port int
+		}{
+			Env:  c.Metrics.Env,
+			Host: c.UpstreamCfg.Metrics.Host,
+			Port: c.UpstreamCfg.Metrics.Port,
+		})
 	}
 
 	apolloconfig.SetLogger()
@@ -136,12 +148,6 @@ func runAPI(ctx *cli.Context) error {
 		return err
 	}
 
-	if c.UpstreamCfg.Metrics.Enabled {
-		// This uses upstream metrics
-		metrics.Init()
-		go startMetricsHttpServer(c.UpstreamCfg.Metrics)
-	}
-
 	waitUnlessInterrupt()
 	return err
 }
@@ -150,6 +156,18 @@ func runPushTask(ctx *cli.Context) error {
 	c, err := setupConfig(ctx)
 	if err != nil {
 		return err
+	}
+
+	if c.UpstreamCfg.Metrics.Enabled {
+		go metrics.StartMetricsHttpServer(struct {
+			Env  string
+			Host string
+			Port int
+		}{
+			Env:  c.Metrics.Env,
+			Host: c.UpstreamCfg.Metrics.Host,
+			Port: c.UpstreamCfg.Metrics.Port,
+		})
 	}
 
 	apiStorage, err := db.NewStorage(c.UpstreamCfg.BridgeServer.DB)
@@ -222,6 +240,18 @@ func runTask(ctx *cli.Context) error {
 	messagebridge.InitUSDCLxLyProcessor(c.BusinessConfig.USDCContractAddresses, c.BusinessConfig.USDCTokenAddresses)
 	messagebridge.InitWstETHProcessor(c.BusinessConfig.WstETHContractAddresses, c.BusinessConfig.WstETHTokenAddresses)
 	messagebridge.InitEURCProcessor(c.BusinessConfig.EURCContractAddresses, c.BusinessConfig.EURCTokenAddresses)
+
+	if c.UpstreamCfg.Metrics.Enabled {
+		go metrics.StartMetricsHttpServer(struct {
+			Env  string
+			Host string
+			Port int
+		}{
+			Env:  c.Metrics.Env,
+			Host: c.UpstreamCfg.Metrics.Host,
+			Port: c.UpstreamCfg.Metrics.Port,
+		})
+	}
 
 	// Initialize all stores
 	apiStorage, err := db.NewStorage(c.UpstreamCfg.BridgeServer.DB)
