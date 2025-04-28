@@ -15,9 +15,9 @@ import (
 )
 
 func initMetrics(c struct {
-	Env  string
-	Host string
-	Port int
+	Env      string
+	Endpoint string
+	Port     int
 }) {
 	if !initialized {
 		registerer = prometheus.DefaultRegisterer

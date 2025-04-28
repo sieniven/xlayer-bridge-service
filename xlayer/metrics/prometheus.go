@@ -30,9 +30,9 @@ func getLogger(metricName, metricType string) *log.Logger {
 
 // StartMetricsHttpServer initializes the metrics registry and starts the prometheus metrics HTTP server
 func StartMetricsHttpServer(c struct {
-	Env  string
-	Host string
-	Port int
+	Env      string
+	Endpoint string
+	Port     int
 }) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -44,7 +44,7 @@ func StartMetricsHttpServer(c struct {
 	mux := http.NewServeMux()
 	addr := fmt.Sprintf(":%d", c.Port)
 
-	endpoint := c.Host
+	endpoint := c.Endpoint
 	if endpoint == "" {
 		endpoint = defaultMetricsEndpoint
 	}

@@ -39,13 +39,13 @@ func runAPI(ctx *cli.Context) error {
 
 	if c.UpstreamCfg.Metrics.Enabled {
 		go metrics.StartMetricsHttpServer(struct {
-			Env  string
-			Host string
-			Port int
+			Env      string
+			Endpoint string
+			Port     int
 		}{
-			Env:  c.Metrics.Env,
-			Host: c.UpstreamCfg.Metrics.Host,
-			Port: c.UpstreamCfg.Metrics.Port,
+			Env:      c.Metrics.Env,
+			Endpoint: "",
+			Port:     c.UpstreamCfg.Metrics.Port,
 		})
 	}
 
@@ -160,13 +160,13 @@ func runPushTask(ctx *cli.Context) error {
 
 	if c.UpstreamCfg.Metrics.Enabled {
 		go metrics.StartMetricsHttpServer(struct {
-			Env  string
-			Host string
-			Port int
+			Env      string
+			Endpoint string
+			Port     int
 		}{
-			Env:  c.Metrics.Env,
-			Host: c.UpstreamCfg.Metrics.Host,
-			Port: c.UpstreamCfg.Metrics.Port,
+			Env:      c.Metrics.Env,
+			Endpoint: "",
+			Port:     c.UpstreamCfg.Metrics.Port,
 		})
 	}
 
@@ -243,13 +243,13 @@ func runTask(ctx *cli.Context) error {
 
 	if c.UpstreamCfg.Metrics.Enabled {
 		go metrics.StartMetricsHttpServer(struct {
-			Env  string
-			Host string
-			Port int
+			Env      string
+			Endpoint string
+			Port     int
 		}{
-			Env:  c.Metrics.Env,
-			Host: c.UpstreamCfg.Metrics.Host,
-			Port: c.UpstreamCfg.Metrics.Port,
+			Env:      c.Metrics.Env,
+			Endpoint: "",
+			Port:     c.UpstreamCfg.Metrics.Port,
 		})
 	}
 
