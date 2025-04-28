@@ -31,8 +31,15 @@ const (
 )
 
 var (
+	// Used to toggle features off for testing.
+	isTest = false
+
 	largeTxUsdLimit = apolloconfig.NewIntEntry[uint64]("Synchronizer.LargeTxUsdLimit", 100000) //nolint:gomnd
 )
+
+func (s *ClientSynchronizer) SetIsTest(flag bool) {
+	isTest = flag
+}
 
 func (s *ClientSynchronizer) beforeProcessDeposit(deposit *etherman.Deposit) {
 	messagebridge.ReplaceDepositDestAddresses(deposit)
@@ -239,6 +246,9 @@ func (s *ClientSynchronizer) getGlobalIndex(deposit *etherman.Deposit) *big.Int 
 
 // recordLatestBlockNum continuously records the latest block number to prometheus metrics
 func (s *ClientSynchronizer) recordLatestBlockNum() {
+	if isTest {
+		return
+	}
 	log.Debugf("Start recordLatestBlockNum")
 	ticker := time.NewTicker(2 * time.Second) //nolint:gomnd
 
