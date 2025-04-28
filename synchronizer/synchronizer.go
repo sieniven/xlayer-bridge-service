@@ -117,7 +117,7 @@ func NewSynchronizer(
 // Sync function will read the last state synced and will continue from that point.
 // Sync() will read blockchain events to detect rollup updates
 func (s *ClientSynchronizer) Sync() error {
-	go s.recordLatestBlockNum()
+	go s.recordLatestBlockNum() // XLayer
 	startInitialization := time.Now()
 	// If there is no lastEthereumBlock means that sync from the beginning is necessary. If not, it continues from the retrieved ethereum block
 	// Get the latest synced block. If there is no block on db, use genesis block
@@ -847,7 +847,7 @@ func (s *ClientSynchronizer) processGlobalExitRoot(globalExitRoot etherman.Globa
 }
 
 func (s *ClientSynchronizer) processDeposit(deposit etherman.Deposit, blockID uint64, dbTx pgx.Tx) error {
-	s.beforeProcessDeposit(&deposit)
+	s.beforeProcessDeposit(&deposit) // XLayer
 	deposit.BlockID = blockID
 	deposit.NetworkID = s.networkID
 	depositID, err := s.storage.AddDeposit(s.ctx, &deposit, dbTx)
@@ -875,7 +875,7 @@ func (s *ClientSynchronizer) processDeposit(deposit etherman.Deposit, blockID ui
 	}
 	metrics.DepositAmount(deposit.Amount)
 
-	return s.afterProcessDeposit(&deposit, depositID, dbTx)
+	return s.afterProcessDeposit(&deposit, depositID, dbTx) // XLayer
 }
 
 func (s *ClientSynchronizer) processClaim(claim etherman.Claim, blockID uint64, dbTx pgx.Tx) error {
