@@ -102,7 +102,7 @@ StandardChainIds = [195]
 InnerChainIds = [19500]
 
 [CoinKafkaConsumer]
-Brokers = []
+Brokers = ["xlayer-bridge-coin-kafka:9092"]
 Topics = ["explorer_chainAddressPrice_push"]
 ConsumerGroupID = "xlayer-bridge-service"
 InitialOffset = -1
