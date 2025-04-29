@@ -51,14 +51,6 @@ Env = "testnet" # XLayer
 StandardChainIds = [195]
 InnerChainIds = [19500]
 
-[CoinKafkaConsumer]
-Brokers = []
-Topics = ["explorer_chainAddressPrice_push"]
-ConsumerGroupID = "xlayer-bridge-service"
-InitialOffset = -1
-Username = ""
-Password = ""
-
 [MessagePushProducer] # This is not fake kafka!
 Enabled = true
 Brokers = ["xlayer-bridge-coin-kafka:9092"]
