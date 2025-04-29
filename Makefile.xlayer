@@ -1,14 +1,38 @@
 include version.mk
 
 DOCKER_COMPOSE := docker compose -f docker-compose.yml
+
 DOCKER_COMPOSE_REDIS := xlayer-bridge-redis
+DOCKER_COMPOSE_BRIDGE_KAFKA := xlayer-bridge-coin-kafka
 DOCKER_COMPOSE_BRIDGE_API := xlayer-bridge-service-api
+DOCKER_COMPOSE_BRIDGE_PUSH := xlayer-bridge-service-push
+DOCKER_COMPOSE_BRIDGE_TASK := xlayer-bridge-service-task
 
 RUN_REDIS := $(DOCKER_COMPOSE) up -d $(DOCKER_COMPOSE_REDIS)
+RUN_BRIDGE_KAFKA := $(DOCKER_COMPOSE) up -d $(DOCKER_COMPOSE_BRIDGE_KAFKA)
 RUN_BRIDGE_API := $(DOCKER_COMPOSE) up -d $(DOCKER_COMPOSE_BRIDGE_API)
+RUN_BRIDGE_PUSH := $(DOCKER_COMPOSE) up -d $(DOCKER_COMPOSE_BRIDGE_PUSH)
+RUN_BRIDGE_TASK := $(DOCKER_COMPOSE) up -d $(DOCKER_COMPOSE_BRIDGE_TASK)
+
+run-kafka:
+	$(RUN_BRIDGE_KAFKA)
 
 run-api:
-	$(RUN_REDIS)
 	$(RUN_DBS)
+	$(RUN_REDIS)
 	sleep 1
 	$(RUN_BRIDGE_API)
+
+run-push:
+	$(RUN_DBS)
+	$(RUN_REDIS)
+	$(RUN_BRIDGE_KAFKA)
+	sleep 1
+	$(RUN_BRIDGE_PUSH)
+
+run-task:
+	$(RUN_DBS)
+	$(RUN_REDIS)
+	$(RUN_BRIDGE_KAFKA)
+	sleep 1
+	$(RUN_BRIDGE_TASK)

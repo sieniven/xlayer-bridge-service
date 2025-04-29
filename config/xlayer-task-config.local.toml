@@ -11,12 +11,20 @@ Host = "zkevm-bridge-db"
 Port = "5432"
 MaxConns = 20
 
+[Etherman]
+L1URL = "http://xlayer-mock-l1-network:8545"
+L2URLs = ["http://xlayer-rpc:8545"] # internal network
+L1ChainId = 5 # XLayer
+L2ChainIds = [1001] # XLayer
+
 [ClaimTxManager]
 Enabled = true
+FreeGas = true
 FrequencyToMonitorTxs = "1s"
 PrivateKey = {Path = "/pk/keystore.claimtxmanager", Password = "testonly"}
 RetryInterval = "1s"
 RetryNumber = 10
+OptClaim = true
 AuthorizedClaimMessageAddresses = ["0x90F79bf6EB2c4f870365E785982E1f101E93b906"]
 AreClaimsBetweenL2sEnabled = false
 [ClaimTxManager.GroupingClaims]
@@ -30,16 +38,11 @@ AreClaimsBetweenL2sEnabled = false
     FrequencyToProcessCompressedClaims = "1m"
     GasOffset = 100000
 
-[Etherman]
-L1URL = "http://xlayer-mock-l1-network:8545"
-L2URLs = ["http://xlayer-rpc:8545"] # internal network
-L1ChainId = 5 # XLayer
-L2ChainIds = [1001] # XLayer
-
 [Synchronizer]
 SyncInterval = "1s"
 SyncChunkSize = 100
 ForceL2SyncChunk = false
+TxUsdLimit = 1000
 
 [BridgeController]
 Store = "postgres"
@@ -94,12 +97,6 @@ Namespaces = ["application"]
 Secret = ""
 IsBackupConfig = true
 
-[NacosConfig]
-NacosUrls = ""
-NamespaceId = "public"
-ApplicationName = ""
-ExternalListenAddr = "127.0.0.1:26659"
-
 [BusinessConfig]
 StandardChainIds = [195]
 InnerChainIds = [19500]
@@ -114,15 +111,5 @@ Password = ""
 
 [MessagePushProducer]
 Enabled = true
-
-[IPRestriction]
-Enabled = false
-UseNacos = false
-Host = "okcoin-users-service-newex-pre"
-Timeout = "2s"
-
-[TokenLogoServiceConfig]
-Enabled = false
-Scheme = "http"
-LogoServiceNacosName = "testing 123"
-Timeout = "3s"
+Brokers = ["xlayer-bridge-coin-kafka:9092"]
+Topic = "explorer_chainAddressPrice_push"

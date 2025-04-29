@@ -60,17 +60,17 @@ func main() {
 			Flags:   flags,
 		},
 		{
-			Name:    "runTask",
-			Aliases: []string{},
-			Usage:   "Run the xlayer bridge tasks, including synchronizer, claimtxman, kafka consumer",
-			Action:  runTask,
-			Flags:   flags,
-		},
-		{
 			Name:    "runPushTask",
 			Aliases: []string{},
 			Usage:   "Run the xlayer bridge push tasks (monitor the block/batch number and push change event to FE)",
 			Action:  runPushTask,
+			Flags:   flags,
+		},
+		{
+			Name:    "runTask",
+			Aliases: []string{},
+			Usage:   "Run the xlayer bridge tasks, including synchronizer, claimtxman, kafka consumer",
+			Action:  runTask,
 			Flags:   flags,
 		},
 	}
