@@ -13,7 +13,7 @@ import (
 
 var (
 	enabled              = false
-	disableEntryDebugLog = false
+	disableEntryDebugLog = true
 	defaultClient        *agollo.Client
 
 	textUnmarshalerType = reflect.TypeOf((*encoding.TextUnmarshaler)(nil)).Elem()
