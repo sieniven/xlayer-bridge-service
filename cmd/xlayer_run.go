@@ -355,6 +355,9 @@ func runTask(ctx *cli.Context) error {
 	}
 	errs.Go(cliSyncL1.Sync)
 
+	// Calls L1 to record some metrics to prometheus
+	go cliSyncL1.RecordLatestBlockNum()
+
 	go func() {
 		for {
 			select {

@@ -1,7 +1,7 @@
 package synchronizer
 
 import (
-	"context"
+	context "context"
 	"math/big"
 	"testing"
 	"time"
@@ -101,14 +101,6 @@ func TestSyncGer(t *testing.T) {
 		chSynced := make(chan uint32)
 		parentCtx := context.Background()
 		sync, err := NewSynchronizerTest(parentCtx, m.Storage, m.BridgeCtrl, m.Etherman, m.ZkEVMClient, genBlockNumber, chEvent, []chan *etherman.GlobalExitRoot{chEvent}, chSynced, cfg, []uint32{}, false)
-
-		// XLayer: dirty move to switch-off record goroutine which panics during test
-		sy, ok := sync.(*ClientSynchronizer)
-		if ok {
-			sy.SetIsTest(true)
-		}
-		sync = sy
-
 		require.NoError(t, err)
 
 		go func() {

@@ -245,7 +245,7 @@ func (s *ClientSynchronizer) getGlobalIndex(deposit *etherman.Deposit) *big.Int 
 }
 
 // recordLatestBlockNum continuously records the latest block number to prometheus metrics
-func (s *ClientSynchronizer) recordLatestBlockNum() {
+func (s *ClientSynchronizer) RecordLatestBlockNum() {
 	if isTest {
 		return
 	}
