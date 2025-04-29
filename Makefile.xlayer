@@ -14,6 +14,8 @@ RUN_BRIDGE_API := $(DOCKER_COMPOSE) up -d $(DOCKER_COMPOSE_BRIDGE_API)
 RUN_BRIDGE_PUSH := $(DOCKER_COMPOSE) up -d $(DOCKER_COMPOSE_BRIDGE_PUSH)
 RUN_BRIDGE_TASK := $(DOCKER_COMPOSE) up -d $(DOCKER_COMPOSE_BRIDGE_TASK)
 
+# This assumes you are running xlayer erigon locally.
+
 run-kafka:
 	$(RUN_BRIDGE_KAFKA)
 
@@ -27,12 +29,12 @@ run-push:
 	$(RUN_DBS)
 	$(RUN_REDIS)
 	$(RUN_BRIDGE_KAFKA)
-	sleep 1
+	sleep 2
 	$(RUN_BRIDGE_PUSH)
 
 run-task:
 	$(RUN_DBS)
 	$(RUN_REDIS)
 	$(RUN_BRIDGE_KAFKA)
-	sleep 1
+	sleep 2
 	$(RUN_BRIDGE_TASK)
