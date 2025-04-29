@@ -196,7 +196,7 @@ func (s *ClientSynchronizer) getEstimateTimeForDepositCreated(networkId uint) ui
 
 func (s *ClientSynchronizer) afterProcessClaim(claim *etherman.Claim, dbTx pgx.Tx) {
 	// Try to retrieve deposit transaction info
-	deposit, err := s.storage.GetDeposit(s.ctx, uint(claim.Index), uint(claim.OriginalNetwork), nil)
+	deposit, err := s.storage.GetDeposit(s.ctx, claim.Index, claim.OriginalNetwork, nil)
 	if err != nil || deposit == nil {
 		log.Warnf("failed to get deposit for claim, claim: %+v, err: %v", claim, err)
 		return
