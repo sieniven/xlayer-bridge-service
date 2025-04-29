@@ -50,7 +50,10 @@ func runAPI(ctx *cli.Context) error {
 		return err
 	}
 
-	loadKmsPasswords(c.UpstreamCfg)
+	if err = loadKmsPasswords(c.UpstreamCfg); err != nil {
+		return err
+	}
+
 	if err = db.RunMigrations(c.UpstreamCfg.SyncDB); err != nil {
 		return err
 	}
@@ -151,7 +154,10 @@ func runPushTask(ctx *cli.Context) error {
 		})
 	}
 
-	loadKmsPasswords(c.UpstreamCfg)
+	if err = loadKmsPasswords(c.UpstreamCfg); err != nil {
+		return err
+	}
+
 	apiStorage, err := db.NewStorage(c.UpstreamCfg.BridgeServer.DB)
 	if err != nil {
 		return err
@@ -217,8 +223,6 @@ func runTask(ctx *cli.Context) error {
 		return err
 	}
 
-	loadKmsPasswords(c.UpstreamCfg)
-
 	messagebridge.InitUSDCLxLyProcessor(c.BusinessConfig.USDCContractAddresses, c.BusinessConfig.USDCTokenAddresses)
 	messagebridge.InitWstETHProcessor(c.BusinessConfig.WstETHContractAddresses, c.BusinessConfig.WstETHTokenAddresses)
 	messagebridge.InitEURCProcessor(c.BusinessConfig.EURCContractAddresses, c.BusinessConfig.EURCTokenAddresses)
@@ -235,15 +239,21 @@ func runTask(ctx *cli.Context) error {
 		})
 	}
 
+	if err = loadKmsPasswords(c.UpstreamCfg); err != nil {
+		return err
+	}
+
 	// Initialize all stores
 	apiStorage, err := db.NewStorage(c.UpstreamCfg.BridgeServer.DB)
 	if err != nil {
 		return err
 	}
+
 	storage, err := db.NewStorage(c.UpstreamCfg.SyncDB)
 	if err != nil {
 		return err
 	}
+
 	redisStorage, err := redisstorage.NewRedisStorage(c.BridgeServer.Redis)
 	if err != nil {
 		return err
