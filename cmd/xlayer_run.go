@@ -16,7 +16,6 @@ import (
 	"github.com/0xPolygonHermez/zkevm-bridge-service/utils/gerror"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/coinmiddleware"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/estimatetime"
-	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/iprestriction"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/localcache"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/messagepush"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/metrics"
@@ -26,13 +25,12 @@ import (
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/tokenlogoinfo"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/utils/messagebridge"
 
-	apolloconfig "github.com/0xPolygonHermez/zkevm-bridge-service/config/apollo_xlayer"
 	client "github.com/0xPolygonHermez/zkevm-bridge-service/jsonrpcclient"
 	xlayerUtils "github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/utils"
 )
 
 func runAPI(ctx *cli.Context) error {
-	c, err := setupConfig(ctx)
+	c, err := setupConfigAndLog(ctx)
 	if err != nil {
 		return err
 	}
@@ -49,39 +47,27 @@ func runAPI(ctx *cli.Context) error {
 		})
 	}
 
-	apolloconfig.SetLogger()
-	setupLog(c.UpstreamCfg.Log)
+	redisStorage, err := redisstorage.NewRedisStorage(c.BridgeServer.Redis)
+	if err != nil {
+		return err
+	}
 
 	loadKmsPasswords(c.UpstreamCfg)
 	if err = db.RunMigrations(c.UpstreamCfg.SyncDB); err != nil {
 		return err
 	}
 
-	// Init global vars from config
-	xlayerUtils.InnitOkInnerChainIdMapper(c.BusinessConfig)
-	iprestriction.InitClient(c.IPRestriction)
-	tokenlogoinfo.InitClient(c.TokenLogoServiceConfig)
-
-	redisStorage, err := redisstorage.NewRedisStorage(c.BridgeServer.Redis)
-	if err != nil {
-		log.Error(err)
-		return err
-	}
-
 	apiStorage, err := db.NewStorage(c.UpstreamCfg.BridgeServer.DB)
 	if err != nil {
-		log.Error(err)
 		return err
 	}
 
 	if err = localcache.InitDefaultCache(apiStorage); err != nil {
-		log.Error(err)
 		return err
 	}
 
 	// Used in bridge service API
 	if err = estimatetime.InitDefaultCalculator(apiStorage); err != nil {
-		log.Error(err)
 		return err
 	}
 
@@ -115,12 +101,10 @@ func runAPI(ctx *cli.Context) error {
 			c.UpstreamCfg.NetworkConfig.L2PolygonBridgeAddresses[i],
 		)
 		if err != nil {
-			log.Error(err)
 			return err
 		}
 		auth, err := nodeClient.GetSignerFromKeystore(ctx.Context, c.UpstreamCfg.ClaimTxManager.PrivateKey)
 		if err != nil {
-			log.Error(err)
 			return err
 		}
 		l2NodeClients[i] = nodeClient
@@ -153,7 +137,7 @@ func runAPI(ctx *cli.Context) error {
 }
 
 func runPushTask(ctx *cli.Context) error {
-	c, err := setupConfig(ctx)
+	c, err := setupConfigAndLog(ctx)
 	if err != nil {
 		return err
 	}
@@ -170,15 +154,14 @@ func runPushTask(ctx *cli.Context) error {
 		})
 	}
 
+	loadKmsPasswords(c.UpstreamCfg)
 	apiStorage, err := db.NewStorage(c.UpstreamCfg.BridgeServer.DB)
 	if err != nil {
-		log.Error(err)
 		return err
 	}
 
 	redisStorage, err := redisstorage.NewRedisStorage(c.BridgeServer.Redis)
 	if err != nil {
-		log.Error(err)
 		return err
 	}
 
@@ -232,10 +215,12 @@ func runTask(ctx *cli.Context) error {
 	// Use this to run Go routines
 	errs, _ := errgroup.WithContext(ctx.Context)
 
-	c, err := setupConfig(ctx)
+	c, err := setupConfigAndLog(ctx)
 	if err != nil {
 		return err
 	}
+
+	loadKmsPasswords(c.UpstreamCfg)
 
 	messagebridge.InitUSDCLxLyProcessor(c.BusinessConfig.USDCContractAddresses, c.BusinessConfig.USDCTokenAddresses)
 	messagebridge.InitWstETHProcessor(c.BusinessConfig.WstETHContractAddresses, c.BusinessConfig.WstETHTokenAddresses)
@@ -331,7 +316,6 @@ func runTask(ctx *cli.Context) error {
 		if c.UpstreamCfg.ClaimTxManager.Enabled {
 			nodeClient, err := utils.NewClient(ctx.Context, L2URL, c.UpstreamCfg.NetworkConfig.L2PolygonBridgeAddresses[i])
 			if err != nil {
-				log.Error(err)
 				return err
 			}
 			nonceCache, err := claimtxman.NewNonceCache(ctx.Context, nodeClient)
@@ -340,7 +324,6 @@ func runTask(ctx *cli.Context) error {
 			}
 			auth, err := nodeClient.GetSignerFromKeystore(ctx.Context, c.UpstreamCfg.ClaimTxManager.PrivateKey)
 			if err != nil {
-				log.Error(err)
 				return err
 			}
 

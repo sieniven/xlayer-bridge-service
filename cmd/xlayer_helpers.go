@@ -9,9 +9,12 @@ import (
 	"github.com/0xPolygonHermez/zkevm-bridge-service/config"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/etherman"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/log"
+	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/iprestriction"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/messagepush"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/nacos"
+	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/tokenlogoinfo"
 
+	apolloconfig "github.com/0xPolygonHermez/zkevm-bridge-service/config/apollo_xlayer"
 	kmsDB "github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/kms"
 	xlayerUtils "github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/utils"
 )
@@ -29,15 +32,32 @@ func loadKmsPasswords(c *config.Config) error {
 	return nil
 }
 
-func setupConfig(ctx *cli.Context) (*config.XLayerConfig, error) {
+func setupConfigAndLog(ctx *cli.Context) (*config.XLayerConfig, error) {
 	configFilePath := ctx.String(flagCfg)
 	network := ctx.String(flagNetwork)
 	cfg, err := config.Load(configFilePath, network)
 	if err != nil {
 		return nil, err
 	}
+
 	// NOTE: Load XLayer config over the upstream configuration.
-	return config.LoadXLayerCfg(cfg)
+	c, err := config.LoadXLayerCfg(cfg)
+	setupLog(c.UpstreamCfg.Log)
+	xlayerUtils.InnitOkInnerChainIdMapper(c.BusinessConfig)
+	iprestriction.InitClient(c.IPRestriction)
+	tokenlogoinfo.InitClient(c.TokenLogoServiceConfig)
+
+	if c.Apollo.Enabled {
+		apolloconfig.SetLogger()
+		if err = apolloconfig.Init(c.Apollo); err != nil {
+			return nil, err
+		}
+		if err = apolloconfig.Load(&c.UpstreamCfg); err != nil {
+			return nil, err
+		}
+	}
+
+	return c, err
 }
 
 func setupKafkaProducer(cfg messagepush.Config) (messagepush.KafkaProducer, error) {
