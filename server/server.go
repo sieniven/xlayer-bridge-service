@@ -18,6 +18,7 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
+// XLayer
 const (
 	bridgeEndpointPath = "/priapi/v1/ob/bridge"
 )
