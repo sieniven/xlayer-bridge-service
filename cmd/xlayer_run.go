@@ -50,10 +50,6 @@ func runAPI(ctx *cli.Context) error {
 		return err
 	}
 
-	if err = loadKmsPasswords(c.UpstreamCfg); err != nil {
-		return err
-	}
-
 	if err = db.RunMigrations(c.UpstreamCfg.SyncDB); err != nil {
 		return err
 	}
@@ -154,10 +150,6 @@ func runPushTask(ctx *cli.Context) error {
 		})
 	}
 
-	if err = loadKmsPasswords(c.UpstreamCfg); err != nil {
-		return err
-	}
-
 	apiStorage, err := db.NewStorage(c.UpstreamCfg.BridgeServer.DB)
 	if err != nil {
 		return err
@@ -237,10 +229,6 @@ func runTask(ctx *cli.Context) error {
 			Endpoint: "",
 			Port:     c.UpstreamCfg.Metrics.Port,
 		})
-	}
-
-	if err = loadKmsPasswords(c.UpstreamCfg); err != nil {
-		return err
 	}
 
 	// Initialize all stores
@@ -367,23 +355,23 @@ func runTask(ctx *cli.Context) error {
 	}
 	errs.Go(cliSyncL1.Sync)
 
+	go func() {
+		for {
+			select {
+			case netID := <-chSynced:
+				log.Debug("L1 Network synced. NetowrkID: ", netID)
+				for _, ch := range chsSyncedL2 {
+					ch <- netID
+				}
+			case <-ctx.Done():
+				log.Debug("Stopping goroutine that listen new GER updates")
+				return
+			}
+		}
+	}()
+
 	if !c.UpstreamCfg.ClaimTxManager.Enabled {
 		log.Warn("ClaimTxManager not configured")
-		go func() {
-			for {
-				select {
-				case netID := <-chSynced:
-					log.Debug("L1 Network synced. NetowrkID: ", netID)
-					for _, ch := range chsSyncedL2 {
-						ch <- netID
-					}
-				case <-ctx.Done():
-					log.Debug("Stopping goroutine that listen new GER updates")
-					return
-				}
-			}
-		}()
-
 		for i := range chsExitRootEvent {
 			monitorChannel(ctx.Context, chsExitRootEvent[i], chsSyncedL2[i], networkIDs[i+1], storage)
 		}

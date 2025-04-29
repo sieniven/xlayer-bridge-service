@@ -40,6 +40,10 @@ func setupConfigAndLog(ctx *cli.Context) (*config.XLayerConfig, error) {
 		return nil, err
 	}
 
+	if err = loadKmsPasswords(cfg); err != nil {
+		return nil, err
+	}
+
 	// NOTE: Load XLayer config over the upstream configuration.
 	c, err := config.LoadXLayerCfg(cfg)
 	setupLog(c.UpstreamCfg.Log)
