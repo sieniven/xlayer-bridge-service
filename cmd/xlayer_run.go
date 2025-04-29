@@ -22,11 +22,9 @@ import (
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/pushtask"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/redisstorage"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/sentinel"
-	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/tokenlogoinfo"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/utils/messagebridge"
 
 	client "github.com/0xPolygonHermez/zkevm-bridge-service/jsonrpcclient"
-	xlayerUtils "github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/utils"
 )
 
 func runAPI(ctx *cli.Context) error {
@@ -90,7 +88,6 @@ func runAPI(ctx *cli.Context) error {
 
 	networkID := l1Etherman.GetNetworkID()
 	networkIDs := setupNetworkIDs(networkID, l2Ethermans)
-	xlayerUtils.InitChainIdManager(networkIDs, chainIDs)
 
 	l2NodeClients := make([]*utils.Client, len(c.UpstreamCfg.Etherman.L2URLs))
 	l2Auths := make([]*bind.TransactOpts, len(c.UpstreamCfg.Etherman.L2URLs))
@@ -381,8 +378,6 @@ func runTask(ctx *cli.Context) error {
 			monitorChannel(ctx.Context, chsExitRootEvent[i], chsSyncedL2[i], networkIDs[i+1], storage)
 		}
 	}
-
-	tokenlogoinfo.InitClient(c.TokenLogoServiceConfig)
 
 	if len(c.CoinKafkaConsumer.Brokers) > 0 {
 		coinKafkaConsumer, err := coinmiddleware.NewKafkaConsumer(c.CoinKafkaConsumer, redisStorage)
