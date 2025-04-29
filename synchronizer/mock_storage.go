@@ -679,7 +679,7 @@ func (_c *storageMock_GetBridgeBalance_Call) RunAndReturn(run func(context.Conte
 }
 
 // GetDeposit provides a mock function with given fields: ctx, depositCounterUser, networkID, dbTx
-func (_m *storageMock) GetDeposit(ctx context.Context, depositCounterUser uint, networkID uint, dbTx pgx.Tx) (*etherman.Deposit, error) {
+func (_m *storageMock) GetDeposit(ctx context.Context, depositCounterUser uint32, networkID uint32, dbTx pgx.Tx) (*etherman.Deposit, error) {
 	ret := _m.Called(ctx, depositCounterUser, networkID, dbTx)
 
 	if len(ret) == 0 {
@@ -688,10 +688,10 @@ func (_m *storageMock) GetDeposit(ctx context.Context, depositCounterUser uint, 
 
 	var r0 *etherman.Deposit
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, uint, uint, pgx.Tx) (*etherman.Deposit, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, uint32, uint32, pgx.Tx) (*etherman.Deposit, error)); ok {
 		return rf(ctx, depositCounterUser, networkID, dbTx)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, uint, uint, pgx.Tx) *etherman.Deposit); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, uint32, uint32, pgx.Tx) *etherman.Deposit); ok {
 		r0 = rf(ctx, depositCounterUser, networkID, dbTx)
 	} else {
 		if ret.Get(0) != nil {
@@ -699,7 +699,7 @@ func (_m *storageMock) GetDeposit(ctx context.Context, depositCounterUser uint, 
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, uint, uint, pgx.Tx) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, uint32, uint32, pgx.Tx) error); ok {
 		r1 = rf(ctx, depositCounterUser, networkID, dbTx)
 	} else {
 		r1 = ret.Error(1)
@@ -715,16 +715,16 @@ type storageMock_GetDeposit_Call struct {
 
 // GetDeposit is a helper method to define mock.On call
 //   - ctx context.Context
-//   - depositCounterUser uint
-//   - networkID uint
+//   - depositCounterUser uint32
+//   - networkID uint32
 //   - dbTx pgx.Tx
 func (_e *storageMock_Expecter) GetDeposit(ctx interface{}, depositCounterUser interface{}, networkID interface{}, dbTx interface{}) *storageMock_GetDeposit_Call {
 	return &storageMock_GetDeposit_Call{Call: _e.mock.On("GetDeposit", ctx, depositCounterUser, networkID, dbTx)}
 }
 
-func (_c *storageMock_GetDeposit_Call) Run(run func(ctx context.Context, depositCounterUser uint, networkID uint, dbTx pgx.Tx)) *storageMock_GetDeposit_Call {
+func (_c *storageMock_GetDeposit_Call) Run(run func(ctx context.Context, depositCounterUser uint32, networkID uint32, dbTx pgx.Tx)) *storageMock_GetDeposit_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(uint), args[2].(uint), args[3].(pgx.Tx))
+		run(args[0].(context.Context), args[1].(uint32), args[2].(uint32), args[3].(pgx.Tx))
 	})
 	return _c
 }
@@ -734,7 +734,7 @@ func (_c *storageMock_GetDeposit_Call) Return(_a0 *etherman.Deposit, _a1 error) 
 	return _c
 }
 
-func (_c *storageMock_GetDeposit_Call) RunAndReturn(run func(context.Context, uint, uint, pgx.Tx) (*etherman.Deposit, error)) *storageMock_GetDeposit_Call {
+func (_c *storageMock_GetDeposit_Call) RunAndReturn(run func(context.Context, uint32, uint32, pgx.Tx) (*etherman.Deposit, error)) *storageMock_GetDeposit_Call {
 	_c.Call.Return(run)
 	return _c
 }
