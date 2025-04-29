@@ -2,48 +2,11 @@
 Level = "info"
 Outputs = ["stdout"]
 
-[SyncDB]
-Database = "postgres"
-User = "test_user"
-Password = "test_password"
-Name = "test_db"
-Host = "zkevm-bridge-db"
-Port = "5432"
-MaxConns = 20
-
-[ClaimTxManager]
-Enabled = false
-FrequencyToMonitorTxs = "1s"
-PrivateKey = {Path = "/pk/keystore.claimtxmanager", Password = "testonly"}
-RetryInterval = "1s"
-RetryNumber = 10
-AuthorizedClaimMessageAddresses = ["0x90F79bf6EB2c4f870365E785982E1f101E93b906"]
-AreClaimsBetweenL2sEnabled = false
-[ClaimTxManager.GroupingClaims]
-    Enabled = false
-    TriggerNumberOfClaims = 20
-    MaxNumberOfClaimsPerGroup = 25
-    TriggerRetainedClaimPeriod = "1m"
-    MaxRetries = 2
-    RetryInterval = "10s"
-    RetryTimeout = "30s"
-    FrequencyToProcessCompressedClaims = "1m"
-    GasOffset = 100000
-
 [Etherman]
 L1URL = "http://xlayer-mock-l1-network:8545"
 L2URLs = ["http://xlayer-rpc:8545"] # internal network
 L1ChainId = 5 # XLayer
 L2ChainIds = [1001] # XLayer
-
-[Synchronizer]
-SyncInterval = "1s"
-SyncChunkSize = 100
-ForceL2SyncChunk = false
-
-[BridgeController]
-Store = "postgres"
-Height = 32
 
 [BridgeServer]
 GRPCPort = "9090"
@@ -51,7 +14,6 @@ HTTPPort = "8080"
 CacheSize = 100000
 DefaultPageLimit = 25
 MaxPageLimit = 100
-SentinelConfigFilePath = "/app/sentinel_config.json" # XLayer
     [BridgeServer.DB]
     Database = "postgres"
     User = "test_user"
@@ -85,21 +47,6 @@ Port = 9091
 Env = "testnet" # XLayer
 
 # XLayer specific
-[Apollo]
-Enabled = false
-AppID = "xlayer-bridge-service"
-Cluster = "default"
-MetaAddress = "http://127.0.0.1:8080"
-Namespaces = ["application"]
-Secret = ""
-IsBackupConfig = true
-
-[NacosConfig]
-NacosUrls = ""
-NamespaceId = "public"
-ApplicationName = ""
-ExternalListenAddr = "127.0.0.1:26659"
-
 [BusinessConfig]
 StandardChainIds = [195]
 InnerChainIds = [19500]
@@ -112,17 +59,17 @@ InitialOffset = -1
 Username = ""
 Password = ""
 
-[MessagePushProducer]
+[MessagePushProducer] # This is not fake kafka!
 Enabled = true
+Brokers = ["xlayer-bridge-coin-kafka:9092"]
+Topic = "explorer_chainAddressPrice_push"
 
-[IPRestriction]
+[Apollo]
 Enabled = false
-UseNacos = false
-Host = "okcoin-users-service-newex-pre"
-Timeout = "2s"
-
-[TokenLogoServiceConfig]
-Enabled = false
-Scheme = "http"
-LogoServiceNacosName = "testing 123"
-Timeout = "3s"
+AppID = "xlayer-bridge-service"
+Cluster = "default"
+MetaAddress = "http://127.0.0.1:8080"
+Namespaces = ["application"]
+Secret = ""
+IsBackupConfig = true
+DisableEntryDebugLog = true
