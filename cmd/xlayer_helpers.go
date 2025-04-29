@@ -76,6 +76,7 @@ func setupKafkaProducer(cfg messagepush.Config) (messagepush.KafkaProducer, erro
 	return messagePushProducer, nil
 }
 
+// The list of network IDs will follow as: {L1 network ID, L2 network IDs...}
 func setupNetworkIDs(networkID uint32, l2Ethermans []*etherman.Client) []uint32 {
 	var networkIDs = []uint32{networkID}
 	for _, cl := range l2Ethermans {
