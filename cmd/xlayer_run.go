@@ -74,6 +74,12 @@ func runAPI(ctx *cli.Context) error {
 		if err != nil {
 			return err
 		}
+		defer func() {
+			err := messagePushProducer.Close()
+			if err != nil {
+				log.Errorf("close kafka producer error: %v", err)
+			}
+		}()
 	}
 
 	l1ChainId := c.Etherman.L1ChainId
@@ -272,6 +278,12 @@ func runTask(ctx *cli.Context) error {
 		if err != nil {
 			return err
 		}
+		defer func() {
+			err := messagePushProducer.Close()
+			if err != nil {
+				log.Errorf("close kafka producer error: %v", err)
+			}
+		}()
 	}
 
 	bridgeService := server.NewBridgeService(c.UpstreamCfg.BridgeServer, c.UpstreamCfg.BridgeController.Height, networkIDs, apiStorage)

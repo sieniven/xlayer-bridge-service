@@ -71,12 +71,6 @@ func setupKafkaProducer(cfg messagepush.Config) (messagepush.KafkaProducer, erro
 	if err != nil {
 		return nil, err
 	}
-	defer func() {
-		err := messagePushProducer.Close()
-		if err != nil {
-			log.Errorf("close kafka producer error: %v", err)
-		}
-	}()
 	return messagePushProducer, nil
 }
 
