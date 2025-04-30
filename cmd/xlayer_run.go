@@ -63,7 +63,6 @@ func runAPI(ctx *cli.Context) error {
 		return err
 	}
 
-	// Used in bridge service API
 	if err = estimatetime.InitDefaultCalculator(apiStorage); err != nil {
 		return err
 	}
@@ -240,6 +239,10 @@ func runTask(ctx *cli.Context) error {
 	// Initialize all stores
 	apiStorage, err := db.NewStorage(c.UpstreamCfg.BridgeServer.DB)
 	if err != nil {
+		return err
+	}
+
+	if err = estimatetime.InitDefaultCalculator(apiStorage); err != nil {
 		return err
 	}
 
