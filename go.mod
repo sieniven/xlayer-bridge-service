@@ -195,4 +195,4 @@ replace gitlab.okg.com/okcoin-commons/ok-kms-go-client => github.com/okx/mock_km
 
 replace github.com/ethereum/go-ethereum => github.com/giskook/go-ethereum v0.0.0-20250430132947-db4e5a770907
 
-replace github.com/0xPolygonHermez/zkevm-node => github.com/giskook/zkevm-node v0.0.0-20250430112444-b2a9707392ab
+replace github.com/0xPolygonHermez/zkevm-node => github.com/giskook/zkevm-node v0.0.0-20250430134118-96956b8d3cdf
