@@ -313,6 +313,7 @@ func (s *ClientSynchronizer) syncBlocks(lastBlockSynced *etherman.Block) (*ether
 			// Store the latest block of the block range. Get block info and process the block
 			fb, err := s.etherMan.EthBlockByNumber(s.ctx, toBlock)
 			if err != nil {
+				log.Debugf("sync blocks 1.5-- %v", err)
 				return lastBlockSynced, err
 			}
 			b := etherman.Block{
