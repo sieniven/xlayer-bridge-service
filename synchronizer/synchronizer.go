@@ -289,7 +289,7 @@ func (s *ClientSynchronizer) syncBlocks(lastBlockSynced *etherman.Block) (*ether
 			log.Debugf("processBlockRange error %v", err)
 			return lastBlockSynced, err
 		}
-		log.Debugf("sync blocks")
+		log.Debugf("sync blocks %d", len(blocks))
 		if len(blocks) > 0 {
 			lastBlockSynced = &blocks[len(blocks)-1]
 			for i := range blocks {
@@ -308,6 +308,7 @@ func (s *ClientSynchronizer) syncBlocks(lastBlockSynced *etherman.Block) (*ether
 			metrics.RecordLastSyncedBlockNum(uint32(s.networkID), lastKnownBlock.Uint64())
 			break
 		}
+		log.Debugf("sync blocks 1-- %d", len(blocks))
 		if len(blocks) == 0 { // If there is no events in the checked blocks range and lastKnownBlock > fromBlock.
 			// Store the latest block of the block range. Get block info and process the block
 			fb, err := s.etherMan.EthBlockByNumber(s.ctx, toBlock)
@@ -322,6 +323,7 @@ func (s *ClientSynchronizer) syncBlocks(lastBlockSynced *etherman.Block) (*ether
 			}
 			err = s.processBlockRange([]etherman.Block{b}, order)
 			if err != nil {
+				log.Debugf("sync blocks 2-- %d", len(blocks))
 				return lastBlockSynced, err
 			}
 
