@@ -193,6 +193,6 @@ require (
 
 replace gitlab.okg.com/okcoin-commons/ok-kms-go-client => github.com/okx/mock_kms v0.2.0
 
-replace github.com/ethereum/go-ethereum => github.com/giskook/go-ethereum v0.0.0-20250430141717-d952b9829a05
+replace github.com/ethereum/go-ethereum => github.com/giskook/go-ethereum  v0.0.0-20250430143342-4db30e4f92d4
 
 // replace github.com/0xPolygonHermez/zkevm-node => github.com/giskook/zkevm-node v0.0.0-20250430134118-96956b8d3cdf
