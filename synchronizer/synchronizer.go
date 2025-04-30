@@ -281,12 +281,15 @@ func (s *ClientSynchronizer) syncBlocks(lastBlockSynced *etherman.Block) (*ether
 		// The value pos (position) tells what is the array index where this value is.
 		blocks, order, err := s.etherMan.GetRollupInfoByBlockRange(s.ctx, fromBlock, &toBlock)
 		if err != nil {
+			log.Debugf("GetRollupInfoByBlockRange error %v", err)
 			return lastBlockSynced, err
 		}
 		err = s.processBlockRange(blocks, order)
 		if err != nil {
+			log.Debugf("processBlockRange error %v", err)
 			return lastBlockSynced, err
 		}
+		log.Debugf("sync blocks")
 		if len(blocks) > 0 {
 			lastBlockSynced = &blocks[len(blocks)-1]
 			for i := range blocks {
