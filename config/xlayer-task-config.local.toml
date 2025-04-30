@@ -1,5 +1,5 @@
 [Log]
-Level = "info"
+Level = "debug"
 Outputs = ["stdout"]
 
 [SyncDB]
@@ -14,8 +14,8 @@ MaxConns = 20
 [Etherman]
 L1URL = "http://xlayer-mock-l1-network:8545"
 L2URLs = ["http://xlayer-rpc:8545"] # internal network
-L1ChainId = 5 # XLayer
-L2ChainIds = [1001] # XLayer
+L1ChainId = 1337 # XLayer
+L2ChainIds = [195] # XLayer
 
 [ClaimTxManager]
 Enabled = true
@@ -39,10 +39,9 @@ AreClaimsBetweenL2sEnabled = false
     GasOffset = 100000
 
 [Synchronizer]
-SyncInterval = "1s"
+SyncInterval = "3s"
 SyncChunkSize = 100
 ForceL2SyncChunk = false
-TxUsdLimit = 1000
 
 [BridgeController]
 Store = "postgres"
@@ -96,6 +95,7 @@ MetaAddress = "http://127.0.0.1:8080"
 Namespaces = ["application"]
 Secret = ""
 IsBackupConfig = true
+DisableEntryDebugLog = true
 
 [BusinessConfig]
 StandardChainIds = [195]

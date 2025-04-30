@@ -17,8 +17,8 @@ MaxConns = 20
 [Etherman]
 L1URL = "http://xlayer-mock-l1-network:8545"
 L2URLs = ["http://xlayer-rpc:8545"] # internal network
-L1ChainId = 5 # XLayer
-L2ChainIds = [1001] # XLayer
+L1ChainId = 1337 # XLayer
+L2ChainIds = [195] # XLayer
 
 [BridgeController]
 Store = "postgres"
