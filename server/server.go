@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 
 	"github.com/0xPolygonHermez/zkevm-bridge-service/bridgectrl/pb"
@@ -16,11 +17,6 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/protobuf/encoding/protojson"
-)
-
-// XLayer
-const (
-	bridgeEndpointPath = "/priapi/v1/ob/bridge"
 )
 
 // RunServer runs gRPC server and HTTP gateway
@@ -99,15 +95,10 @@ func runGRPCServer(ctx context.Context, bridgeServer pb.BridgeServiceServer, por
 }
 
 func preflightHandler(w http.ResponseWriter, r *http.Request) {
-	// headers := []string{"Content-Type", "Accept"}
-	// w.Header().Set("Access-Control-Allow-Headers", strings.Join(headers, ","))
-	// methods := []string{"GET", "HEAD", "POST", "PUT", "DELETE"}
-	// w.Header().Set("Access-Control-Allow-Methods", strings.Join(methods, ","))
-
-	// XLayer
-	w.Header().Set("Access-Control-Allow-Headers", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "*")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
+	headers := []string{"Content-Type", "Accept"}
+	w.Header().Set("Access-Control-Allow-Headers", strings.Join(headers, ","))
+	methods := []string{"GET", "HEAD", "POST", "PUT", "DELETE"}
+	w.Header().Set("Access-Control-Allow-Methods", strings.Join(methods, ","))
 }
 
 // allowCORS allows Cross Origin Resource Sharing from any origin.
@@ -148,11 +139,6 @@ func runRestServer(ctx context.Context, grpcPort, httpPort string) error {
 	})
 	mux := runtime.NewServeMux(muxJSONOpt, muxHealthOpt)
 
-	// XLayer
-	httpMux := http.NewServeMux()
-	httpMux.Handle(bridgeEndpointPath+"/", http.StripPrefix(bridgeEndpointPath, mux))
-	httpMux.Handle("/", mux)
-
 	if err := pb.RegisterBridgeServiceHandler(ctx, mux, conn); err != nil {
 		return err
 	}
@@ -160,7 +146,7 @@ func runRestServer(ctx context.Context, grpcPort, httpPort string) error {
 	srv := &http.Server{
 		ReadTimeout: 1 * time.Second, //nolint:mnd
 		Addr:        ":" + httpPort,
-		Handler:     allowCORS(httpMux), // XLayer
+		Handler:     allowCORS(mux),
 	}
 
 	c := make(chan os.Signal, 1)
