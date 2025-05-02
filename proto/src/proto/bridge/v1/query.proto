@@ -72,6 +72,101 @@ service BridgeService {
             get: "/v2/merkle-proof"
         };
     }
+
+    /*
+     * ---------- XLayer endpoints ----------
+     */
+
+    /// Get the latest price of the specified coins
+    rpc GetCoinPrice(GetCoinPriceRequest) returns (CommonCoinPricesResponse) {
+        option (google.api.http) = {
+            post: "/coin-price",
+            body: "*",
+        };
+    }
+
+    /// Get the list of all the main coins of a specified network
+    rpc GetMainCoins(GetMainCoinsRequest) returns (CommonCoinsResponse) {
+        option (google.api.http) = {
+            get: "/main-coins/{networkId}",
+        };
+    }
+
+    /// Get the pending (not claimed) transactions of an account
+    rpc GetPendingTransactions(GetPendingTransactionsRequest) returns (CommonTransactionsResponse) {
+        option (google.api.http) = {
+            get: "/pending/{destAddr}",
+        };
+    }
+
+    /// Get all the transactions of an account. Similar to GetBridges but the field names are changed
+    rpc GetAllTransactions(GetAllTransactionsRequest) returns (CommonTransactionsResponse) {
+        option (google.api.http) = {
+            get: "/all/{destAddr}",
+        };
+    }
+
+    rpc GetSmtProof(GetSmtProofRequest) returns (CommonProofResponse) {
+        option (google.api.http) = {
+            get: "/smt-proof",
+        };
+    }
+
+    /// Get all transactions with ready_for_claim = false
+    rpc GetNotReadyTransactions(GetNotReadyTransactionsRequest) returns (CommonTransactionsResponse) {
+        option (google.api.http) = {
+            get: "/not-ready",
+        };
+    }
+
+    /// Get list of monitored transactions, filtered by status
+    rpc GetMonitoredTxsByStatus(GetMonitoredTxsByStatusRequest) returns (CommonMonitoredTxsResponse) {
+        option (google.api.http) = {
+            get: "/monitored-txs/status/{status}",
+        };
+    }
+
+    /// Return the estimated deposit wait time for L1 and L2
+    rpc GetEstimateTime(GetEstimateTimeRequest) returns (CommonEstimateTimeResponse) {
+        option (google.api.http) = {
+            get: "/estimate-time",
+        };
+    }
+
+    rpc ManualClaim(ManualClaimRequest) returns (CommonManualClaimResponse) {
+        option (google.api.http) = {
+            post: "/manual-claim",
+            body: "*",
+        };
+    }
+
+    /// Returns all transactions from a network that are ready_for_claim but not claimed
+    rpc GetReadyPendingTransactions(GetReadyPendingTransactionsRequest) returns (CommonTransactionsResponse) {
+        option (google.api.http) = {
+            get: "/ready-pending/{networkId}",
+        };
+    }
+
+    /// Return the messages from the fake producer, only for testing when UseFakeProducer is enabled
+    /// Return at most 100 latest messages, there's no offset management so client should handle duplications
+    rpc GetFakePushMessages(GetFakePushMessagesRequest) returns (GetFakePushMessagesResponse) {
+        option (google.api.http) = {
+            get: "/fake-push-messages/{topic}",
+        };
+    }
+
+    /// Return large transaction infos
+    rpc GetLargeTransactionInfos(LargeTxsRequest) returns (LargeTxsResponse) {
+        option (google.api.http) = {
+            get: "/large-transactions",
+        };
+    }
+
+    rpc GetWstEthTokenNotWithdrawn(GetWstEthTokenNotWithdrawnRequest) returns (GetWstEthTokenNotWithdrawnResponse) {
+        option (google.api.http) = {
+            get: "/wsteth/token-not-withdrawn",
+        };
+    }
 }
 
 // TokenWrapped message

@@ -22,15 +22,28 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	BridgeService_CheckAPI_FullMethodName                 = "/bridge.v1.BridgeService/CheckAPI"
-	BridgeService_GetBridges_FullMethodName               = "/bridge.v1.BridgeService/GetBridges"
-	BridgeService_GetProof_FullMethodName                 = "/bridge.v1.BridgeService/GetProof"
-	BridgeService_GetProofByGER_FullMethodName            = "/bridge.v1.BridgeService/GetProofByGER"
-	BridgeService_GetBridge_FullMethodName                = "/bridge.v1.BridgeService/GetBridge"
-	BridgeService_GetClaims_FullMethodName                = "/bridge.v1.BridgeService/GetClaims"
-	BridgeService_GetTokenWrapped_FullMethodName          = "/bridge.v1.BridgeService/GetTokenWrapped"
-	BridgeService_GetPendingBridgesToClaim_FullMethodName = "/bridge.v1.BridgeService/GetPendingBridgesToClaim"
-	BridgeService_GetProofV2_FullMethodName               = "/bridge.v1.BridgeService/GetProofV2"
+	BridgeService_CheckAPI_FullMethodName                    = "/bridge.v1.BridgeService/CheckAPI"
+	BridgeService_GetBridges_FullMethodName                  = "/bridge.v1.BridgeService/GetBridges"
+	BridgeService_GetProof_FullMethodName                    = "/bridge.v1.BridgeService/GetProof"
+	BridgeService_GetProofByGER_FullMethodName               = "/bridge.v1.BridgeService/GetProofByGER"
+	BridgeService_GetBridge_FullMethodName                   = "/bridge.v1.BridgeService/GetBridge"
+	BridgeService_GetClaims_FullMethodName                   = "/bridge.v1.BridgeService/GetClaims"
+	BridgeService_GetTokenWrapped_FullMethodName             = "/bridge.v1.BridgeService/GetTokenWrapped"
+	BridgeService_GetPendingBridgesToClaim_FullMethodName    = "/bridge.v1.BridgeService/GetPendingBridgesToClaim"
+	BridgeService_GetProofV2_FullMethodName                  = "/bridge.v1.BridgeService/GetProofV2"
+	BridgeService_GetCoinPrice_FullMethodName                = "/bridge.v1.BridgeService/GetCoinPrice"
+	BridgeService_GetMainCoins_FullMethodName                = "/bridge.v1.BridgeService/GetMainCoins"
+	BridgeService_GetPendingTransactions_FullMethodName      = "/bridge.v1.BridgeService/GetPendingTransactions"
+	BridgeService_GetAllTransactions_FullMethodName          = "/bridge.v1.BridgeService/GetAllTransactions"
+	BridgeService_GetSmtProof_FullMethodName                 = "/bridge.v1.BridgeService/GetSmtProof"
+	BridgeService_GetNotReadyTransactions_FullMethodName     = "/bridge.v1.BridgeService/GetNotReadyTransactions"
+	BridgeService_GetMonitoredTxsByStatus_FullMethodName     = "/bridge.v1.BridgeService/GetMonitoredTxsByStatus"
+	BridgeService_GetEstimateTime_FullMethodName             = "/bridge.v1.BridgeService/GetEstimateTime"
+	BridgeService_ManualClaim_FullMethodName                 = "/bridge.v1.BridgeService/ManualClaim"
+	BridgeService_GetReadyPendingTransactions_FullMethodName = "/bridge.v1.BridgeService/GetReadyPendingTransactions"
+	BridgeService_GetFakePushMessages_FullMethodName         = "/bridge.v1.BridgeService/GetFakePushMessages"
+	BridgeService_GetLargeTransactionInfos_FullMethodName    = "/bridge.v1.BridgeService/GetLargeTransactionInfos"
+	BridgeService_GetWstEthTokenNotWithdrawn_FullMethodName  = "/bridge.v1.BridgeService/GetWstEthTokenNotWithdrawn"
 )
 
 // BridgeServiceClient is the client API for BridgeService service.
@@ -56,6 +69,30 @@ type BridgeServiceClient interface {
 	GetPendingBridgesToClaim(ctx context.Context, in *GetPendingBridgesRequest, opts ...grpc.CallOption) (*GetBridgesResponse, error)
 	// / Get the merkle proof for the specific deposit. It is compatible with Apps Team bridge
 	GetProofV2(ctx context.Context, in *GetProofV2Request, opts ...grpc.CallOption) (*GetProofResponse, error)
+	// / Get the latest price of the specified coins
+	GetCoinPrice(ctx context.Context, in *GetCoinPriceRequest, opts ...grpc.CallOption) (*CommonCoinPricesResponse, error)
+	// / Get the list of all the main coins of a specified network
+	GetMainCoins(ctx context.Context, in *GetMainCoinsRequest, opts ...grpc.CallOption) (*CommonCoinsResponse, error)
+	// / Get the pending (not claimed) transactions of an account
+	GetPendingTransactions(ctx context.Context, in *GetPendingTransactionsRequest, opts ...grpc.CallOption) (*CommonTransactionsResponse, error)
+	// / Get all the transactions of an account. Similar to GetBridges but the field names are changed
+	GetAllTransactions(ctx context.Context, in *GetAllTransactionsRequest, opts ...grpc.CallOption) (*CommonTransactionsResponse, error)
+	GetSmtProof(ctx context.Context, in *GetSmtProofRequest, opts ...grpc.CallOption) (*CommonProofResponse, error)
+	// / Get all transactions with ready_for_claim = false
+	GetNotReadyTransactions(ctx context.Context, in *GetNotReadyTransactionsRequest, opts ...grpc.CallOption) (*CommonTransactionsResponse, error)
+	// / Get list of monitored transactions, filtered by status
+	GetMonitoredTxsByStatus(ctx context.Context, in *GetMonitoredTxsByStatusRequest, opts ...grpc.CallOption) (*CommonMonitoredTxsResponse, error)
+	// / Return the estimated deposit wait time for L1 and L2
+	GetEstimateTime(ctx context.Context, in *GetEstimateTimeRequest, opts ...grpc.CallOption) (*CommonEstimateTimeResponse, error)
+	ManualClaim(ctx context.Context, in *ManualClaimRequest, opts ...grpc.CallOption) (*CommonManualClaimResponse, error)
+	// / Returns all transactions from a network that are ready_for_claim but not claimed
+	GetReadyPendingTransactions(ctx context.Context, in *GetReadyPendingTransactionsRequest, opts ...grpc.CallOption) (*CommonTransactionsResponse, error)
+	// / Return the messages from the fake producer, only for testing when UseFakeProducer is enabled
+	// / Return at most 100 latest messages, there's no offset management so client should handle duplications
+	GetFakePushMessages(ctx context.Context, in *GetFakePushMessagesRequest, opts ...grpc.CallOption) (*GetFakePushMessagesResponse, error)
+	// / Return large transaction infos
+	GetLargeTransactionInfos(ctx context.Context, in *LargeTxsRequest, opts ...grpc.CallOption) (*LargeTxsResponse, error)
+	GetWstEthTokenNotWithdrawn(ctx context.Context, in *GetWstEthTokenNotWithdrawnRequest, opts ...grpc.CallOption) (*GetWstEthTokenNotWithdrawnResponse, error)
 }
 
 type bridgeServiceClient struct {
@@ -156,6 +193,136 @@ func (c *bridgeServiceClient) GetProofV2(ctx context.Context, in *GetProofV2Requ
 	return out, nil
 }
 
+func (c *bridgeServiceClient) GetCoinPrice(ctx context.Context, in *GetCoinPriceRequest, opts ...grpc.CallOption) (*CommonCoinPricesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CommonCoinPricesResponse)
+	err := c.cc.Invoke(ctx, BridgeService_GetCoinPrice_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *bridgeServiceClient) GetMainCoins(ctx context.Context, in *GetMainCoinsRequest, opts ...grpc.CallOption) (*CommonCoinsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CommonCoinsResponse)
+	err := c.cc.Invoke(ctx, BridgeService_GetMainCoins_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *bridgeServiceClient) GetPendingTransactions(ctx context.Context, in *GetPendingTransactionsRequest, opts ...grpc.CallOption) (*CommonTransactionsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CommonTransactionsResponse)
+	err := c.cc.Invoke(ctx, BridgeService_GetPendingTransactions_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *bridgeServiceClient) GetAllTransactions(ctx context.Context, in *GetAllTransactionsRequest, opts ...grpc.CallOption) (*CommonTransactionsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CommonTransactionsResponse)
+	err := c.cc.Invoke(ctx, BridgeService_GetAllTransactions_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *bridgeServiceClient) GetSmtProof(ctx context.Context, in *GetSmtProofRequest, opts ...grpc.CallOption) (*CommonProofResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CommonProofResponse)
+	err := c.cc.Invoke(ctx, BridgeService_GetSmtProof_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *bridgeServiceClient) GetNotReadyTransactions(ctx context.Context, in *GetNotReadyTransactionsRequest, opts ...grpc.CallOption) (*CommonTransactionsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CommonTransactionsResponse)
+	err := c.cc.Invoke(ctx, BridgeService_GetNotReadyTransactions_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *bridgeServiceClient) GetMonitoredTxsByStatus(ctx context.Context, in *GetMonitoredTxsByStatusRequest, opts ...grpc.CallOption) (*CommonMonitoredTxsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CommonMonitoredTxsResponse)
+	err := c.cc.Invoke(ctx, BridgeService_GetMonitoredTxsByStatus_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *bridgeServiceClient) GetEstimateTime(ctx context.Context, in *GetEstimateTimeRequest, opts ...grpc.CallOption) (*CommonEstimateTimeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CommonEstimateTimeResponse)
+	err := c.cc.Invoke(ctx, BridgeService_GetEstimateTime_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *bridgeServiceClient) ManualClaim(ctx context.Context, in *ManualClaimRequest, opts ...grpc.CallOption) (*CommonManualClaimResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CommonManualClaimResponse)
+	err := c.cc.Invoke(ctx, BridgeService_ManualClaim_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *bridgeServiceClient) GetReadyPendingTransactions(ctx context.Context, in *GetReadyPendingTransactionsRequest, opts ...grpc.CallOption) (*CommonTransactionsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CommonTransactionsResponse)
+	err := c.cc.Invoke(ctx, BridgeService_GetReadyPendingTransactions_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *bridgeServiceClient) GetFakePushMessages(ctx context.Context, in *GetFakePushMessagesRequest, opts ...grpc.CallOption) (*GetFakePushMessagesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetFakePushMessagesResponse)
+	err := c.cc.Invoke(ctx, BridgeService_GetFakePushMessages_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *bridgeServiceClient) GetLargeTransactionInfos(ctx context.Context, in *LargeTxsRequest, opts ...grpc.CallOption) (*LargeTxsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(LargeTxsResponse)
+	err := c.cc.Invoke(ctx, BridgeService_GetLargeTransactionInfos_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *bridgeServiceClient) GetWstEthTokenNotWithdrawn(ctx context.Context, in *GetWstEthTokenNotWithdrawnRequest, opts ...grpc.CallOption) (*GetWstEthTokenNotWithdrawnResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetWstEthTokenNotWithdrawnResponse)
+	err := c.cc.Invoke(ctx, BridgeService_GetWstEthTokenNotWithdrawn_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // BridgeServiceServer is the server API for BridgeService service.
 // All implementations must embed UnimplementedBridgeServiceServer
 // for forward compatibility.
@@ -179,6 +346,30 @@ type BridgeServiceServer interface {
 	GetPendingBridgesToClaim(context.Context, *GetPendingBridgesRequest) (*GetBridgesResponse, error)
 	// / Get the merkle proof for the specific deposit. It is compatible with Apps Team bridge
 	GetProofV2(context.Context, *GetProofV2Request) (*GetProofResponse, error)
+	// / Get the latest price of the specified coins
+	GetCoinPrice(context.Context, *GetCoinPriceRequest) (*CommonCoinPricesResponse, error)
+	// / Get the list of all the main coins of a specified network
+	GetMainCoins(context.Context, *GetMainCoinsRequest) (*CommonCoinsResponse, error)
+	// / Get the pending (not claimed) transactions of an account
+	GetPendingTransactions(context.Context, *GetPendingTransactionsRequest) (*CommonTransactionsResponse, error)
+	// / Get all the transactions of an account. Similar to GetBridges but the field names are changed
+	GetAllTransactions(context.Context, *GetAllTransactionsRequest) (*CommonTransactionsResponse, error)
+	GetSmtProof(context.Context, *GetSmtProofRequest) (*CommonProofResponse, error)
+	// / Get all transactions with ready_for_claim = false
+	GetNotReadyTransactions(context.Context, *GetNotReadyTransactionsRequest) (*CommonTransactionsResponse, error)
+	// / Get list of monitored transactions, filtered by status
+	GetMonitoredTxsByStatus(context.Context, *GetMonitoredTxsByStatusRequest) (*CommonMonitoredTxsResponse, error)
+	// / Return the estimated deposit wait time for L1 and L2
+	GetEstimateTime(context.Context, *GetEstimateTimeRequest) (*CommonEstimateTimeResponse, error)
+	ManualClaim(context.Context, *ManualClaimRequest) (*CommonManualClaimResponse, error)
+	// / Returns all transactions from a network that are ready_for_claim but not claimed
+	GetReadyPendingTransactions(context.Context, *GetReadyPendingTransactionsRequest) (*CommonTransactionsResponse, error)
+	// / Return the messages from the fake producer, only for testing when UseFakeProducer is enabled
+	// / Return at most 100 latest messages, there's no offset management so client should handle duplications
+	GetFakePushMessages(context.Context, *GetFakePushMessagesRequest) (*GetFakePushMessagesResponse, error)
+	// / Return large transaction infos
+	GetLargeTransactionInfos(context.Context, *LargeTxsRequest) (*LargeTxsResponse, error)
+	GetWstEthTokenNotWithdrawn(context.Context, *GetWstEthTokenNotWithdrawnRequest) (*GetWstEthTokenNotWithdrawnResponse, error)
 	mustEmbedUnimplementedBridgeServiceServer()
 }
 
@@ -215,6 +406,45 @@ func (UnimplementedBridgeServiceServer) GetPendingBridgesToClaim(context.Context
 }
 func (UnimplementedBridgeServiceServer) GetProofV2(context.Context, *GetProofV2Request) (*GetProofResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetProofV2 not implemented")
+}
+func (UnimplementedBridgeServiceServer) GetCoinPrice(context.Context, *GetCoinPriceRequest) (*CommonCoinPricesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCoinPrice not implemented")
+}
+func (UnimplementedBridgeServiceServer) GetMainCoins(context.Context, *GetMainCoinsRequest) (*CommonCoinsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMainCoins not implemented")
+}
+func (UnimplementedBridgeServiceServer) GetPendingTransactions(context.Context, *GetPendingTransactionsRequest) (*CommonTransactionsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPendingTransactions not implemented")
+}
+func (UnimplementedBridgeServiceServer) GetAllTransactions(context.Context, *GetAllTransactionsRequest) (*CommonTransactionsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllTransactions not implemented")
+}
+func (UnimplementedBridgeServiceServer) GetSmtProof(context.Context, *GetSmtProofRequest) (*CommonProofResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSmtProof not implemented")
+}
+func (UnimplementedBridgeServiceServer) GetNotReadyTransactions(context.Context, *GetNotReadyTransactionsRequest) (*CommonTransactionsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetNotReadyTransactions not implemented")
+}
+func (UnimplementedBridgeServiceServer) GetMonitoredTxsByStatus(context.Context, *GetMonitoredTxsByStatusRequest) (*CommonMonitoredTxsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMonitoredTxsByStatus not implemented")
+}
+func (UnimplementedBridgeServiceServer) GetEstimateTime(context.Context, *GetEstimateTimeRequest) (*CommonEstimateTimeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetEstimateTime not implemented")
+}
+func (UnimplementedBridgeServiceServer) ManualClaim(context.Context, *ManualClaimRequest) (*CommonManualClaimResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ManualClaim not implemented")
+}
+func (UnimplementedBridgeServiceServer) GetReadyPendingTransactions(context.Context, *GetReadyPendingTransactionsRequest) (*CommonTransactionsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetReadyPendingTransactions not implemented")
+}
+func (UnimplementedBridgeServiceServer) GetFakePushMessages(context.Context, *GetFakePushMessagesRequest) (*GetFakePushMessagesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetFakePushMessages not implemented")
+}
+func (UnimplementedBridgeServiceServer) GetLargeTransactionInfos(context.Context, *LargeTxsRequest) (*LargeTxsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLargeTransactionInfos not implemented")
+}
+func (UnimplementedBridgeServiceServer) GetWstEthTokenNotWithdrawn(context.Context, *GetWstEthTokenNotWithdrawnRequest) (*GetWstEthTokenNotWithdrawnResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetWstEthTokenNotWithdrawn not implemented")
 }
 func (UnimplementedBridgeServiceServer) mustEmbedUnimplementedBridgeServiceServer() {}
 func (UnimplementedBridgeServiceServer) testEmbeddedByValue()                       {}
@@ -399,6 +629,240 @@ func _BridgeService_GetProofV2_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _BridgeService_GetCoinPrice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetCoinPriceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BridgeServiceServer).GetCoinPrice(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: BridgeService_GetCoinPrice_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BridgeServiceServer).GetCoinPrice(ctx, req.(*GetCoinPriceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _BridgeService_GetMainCoins_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetMainCoinsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BridgeServiceServer).GetMainCoins(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: BridgeService_GetMainCoins_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BridgeServiceServer).GetMainCoins(ctx, req.(*GetMainCoinsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _BridgeService_GetPendingTransactions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPendingTransactionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BridgeServiceServer).GetPendingTransactions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: BridgeService_GetPendingTransactions_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BridgeServiceServer).GetPendingTransactions(ctx, req.(*GetPendingTransactionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _BridgeService_GetAllTransactions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAllTransactionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BridgeServiceServer).GetAllTransactions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: BridgeService_GetAllTransactions_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BridgeServiceServer).GetAllTransactions(ctx, req.(*GetAllTransactionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _BridgeService_GetSmtProof_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSmtProofRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BridgeServiceServer).GetSmtProof(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: BridgeService_GetSmtProof_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BridgeServiceServer).GetSmtProof(ctx, req.(*GetSmtProofRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _BridgeService_GetNotReadyTransactions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetNotReadyTransactionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BridgeServiceServer).GetNotReadyTransactions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: BridgeService_GetNotReadyTransactions_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BridgeServiceServer).GetNotReadyTransactions(ctx, req.(*GetNotReadyTransactionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _BridgeService_GetMonitoredTxsByStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetMonitoredTxsByStatusRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BridgeServiceServer).GetMonitoredTxsByStatus(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: BridgeService_GetMonitoredTxsByStatus_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BridgeServiceServer).GetMonitoredTxsByStatus(ctx, req.(*GetMonitoredTxsByStatusRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _BridgeService_GetEstimateTime_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetEstimateTimeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BridgeServiceServer).GetEstimateTime(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: BridgeService_GetEstimateTime_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BridgeServiceServer).GetEstimateTime(ctx, req.(*GetEstimateTimeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _BridgeService_ManualClaim_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ManualClaimRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BridgeServiceServer).ManualClaim(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: BridgeService_ManualClaim_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BridgeServiceServer).ManualClaim(ctx, req.(*ManualClaimRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _BridgeService_GetReadyPendingTransactions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetReadyPendingTransactionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BridgeServiceServer).GetReadyPendingTransactions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: BridgeService_GetReadyPendingTransactions_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BridgeServiceServer).GetReadyPendingTransactions(ctx, req.(*GetReadyPendingTransactionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _BridgeService_GetFakePushMessages_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetFakePushMessagesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BridgeServiceServer).GetFakePushMessages(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: BridgeService_GetFakePushMessages_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BridgeServiceServer).GetFakePushMessages(ctx, req.(*GetFakePushMessagesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _BridgeService_GetLargeTransactionInfos_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LargeTxsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BridgeServiceServer).GetLargeTransactionInfos(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: BridgeService_GetLargeTransactionInfos_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BridgeServiceServer).GetLargeTransactionInfos(ctx, req.(*LargeTxsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _BridgeService_GetWstEthTokenNotWithdrawn_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetWstEthTokenNotWithdrawnRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BridgeServiceServer).GetWstEthTokenNotWithdrawn(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: BridgeService_GetWstEthTokenNotWithdrawn_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BridgeServiceServer).GetWstEthTokenNotWithdrawn(ctx, req.(*GetWstEthTokenNotWithdrawnRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // BridgeService_ServiceDesc is the grpc.ServiceDesc for BridgeService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -441,6 +905,58 @@ var BridgeService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetProofV2",
 			Handler:    _BridgeService_GetProofV2_Handler,
+		},
+		{
+			MethodName: "GetCoinPrice",
+			Handler:    _BridgeService_GetCoinPrice_Handler,
+		},
+		{
+			MethodName: "GetMainCoins",
+			Handler:    _BridgeService_GetMainCoins_Handler,
+		},
+		{
+			MethodName: "GetPendingTransactions",
+			Handler:    _BridgeService_GetPendingTransactions_Handler,
+		},
+		{
+			MethodName: "GetAllTransactions",
+			Handler:    _BridgeService_GetAllTransactions_Handler,
+		},
+		{
+			MethodName: "GetSmtProof",
+			Handler:    _BridgeService_GetSmtProof_Handler,
+		},
+		{
+			MethodName: "GetNotReadyTransactions",
+			Handler:    _BridgeService_GetNotReadyTransactions_Handler,
+		},
+		{
+			MethodName: "GetMonitoredTxsByStatus",
+			Handler:    _BridgeService_GetMonitoredTxsByStatus_Handler,
+		},
+		{
+			MethodName: "GetEstimateTime",
+			Handler:    _BridgeService_GetEstimateTime_Handler,
+		},
+		{
+			MethodName: "ManualClaim",
+			Handler:    _BridgeService_ManualClaim_Handler,
+		},
+		{
+			MethodName: "GetReadyPendingTransactions",
+			Handler:    _BridgeService_GetReadyPendingTransactions_Handler,
+		},
+		{
+			MethodName: "GetFakePushMessages",
+			Handler:    _BridgeService_GetFakePushMessages_Handler,
+		},
+		{
+			MethodName: "GetLargeTransactionInfos",
+			Handler:    _BridgeService_GetLargeTransactionInfos_Handler,
+		},
+		{
+			MethodName: "GetWstEthTokenNotWithdrawn",
+			Handler:    _BridgeService_GetWstEthTokenNotWithdrawn_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
