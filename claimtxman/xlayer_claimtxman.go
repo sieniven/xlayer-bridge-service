@@ -79,6 +79,9 @@ func (tm *ClaimTxManager) StartXLayer() {
 	var latestProcessedGer common.Hash
 	for {
 		select {
+		case <-tm.ctx.Done():
+			isDone = true
+			return
 		case netID := <-tm.chSynced:
 			if netID == tm.l2NetworkID && !tm.l2Synced {
 				log.Info("NetworkID synced: ", netID)
