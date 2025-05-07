@@ -25,11 +25,6 @@ import (
 	xlUtils "github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/utils"
 )
 
-const (
-	num1               = 1
-	wstETHRedisLockKey = "wst_eth_l2_token_not_withdrawn_lock_"
-)
-
 var (
 	largeTxUsdLimit = apolloconfig.NewIntEntry[uint64]("Synchronizer.LargeTxUsdLimit", 100000) //nolint:gomnd
 )
@@ -169,7 +164,7 @@ func (s *ClientSynchronizer) freshLargeTxCache(ctx context.Context, transaction 
 		log.Errorf("failed set large tx cache for tx: %v, err: %v", transaction.GetTxHash(), err)
 	}
 	log.Debugf("success push tx for key: %v, size: %v", key, size)
-	if size == num1 {
+	if size == 1 {
 		log.Infof("success init new cache list for large transaction, key: %v", key)
 		ret, err := s.redisStorage.ExpireLargeTransactions(ctx, key, utils.GetLargeTxCacheExpireDuration())
 		if err != nil || !ret {
