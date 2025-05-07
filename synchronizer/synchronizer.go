@@ -846,7 +846,7 @@ func (s *ClientSynchronizer) processGlobalExitRoot(globalExitRoot etherman.Globa
 }
 
 func (s *ClientSynchronizer) processDeposit(deposit etherman.Deposit, blockID uint64, dbTx pgx.Tx) error {
-	s.beforeProcessDeposit(&deposit) // XLayer
+	// s.beforeProcessDeposit(&deposit) // XLayer
 	deposit.BlockID = blockID
 	deposit.NetworkID = s.networkID
 	depositID, err := s.storage.AddDeposit(s.ctx, &deposit, dbTx)
@@ -874,7 +874,8 @@ func (s *ClientSynchronizer) processDeposit(deposit etherman.Deposit, blockID ui
 	}
 	metrics.DepositAmount(deposit.Amount)
 
-	return s.afterProcessDeposit(&deposit, depositID, dbTx) // XLayer
+	// return s.afterProcessDeposit(&deposit, depositID, dbTx) // XLayer
+	return nil
 }
 
 func (s *ClientSynchronizer) processClaim(claim etherman.Claim, blockID uint64, dbTx pgx.Tx) error {
@@ -895,7 +896,7 @@ func (s *ClientSynchronizer) processClaim(claim etherman.Claim, blockID uint64, 
 
 	// For X Layer
 	// It shouldn't block the sync process
-	go s.afterProcessClaim(&claim, dbTx)
+	// go s.afterProcessClaim(&claim, dbTx)
 	return nil
 }
 
