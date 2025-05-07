@@ -103,7 +103,7 @@ func registerNacos(cfg nacos.Config) {
 
 func enableMetrics(c *config.XLayerConfig) {
 	if c.UpstreamCfg.Metrics.Enabled {
-		go metrics.StartMetricsHttpServer(struct {
+		metrics.StartMetricsHttpServer(struct {
 			Env      string
 			Endpoint string
 			Port     int

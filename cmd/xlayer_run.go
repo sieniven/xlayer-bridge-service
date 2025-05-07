@@ -43,7 +43,7 @@ func run(ctx *cli.Context, choice string) error {
 		return err
 	}
 
-	enableMetrics(c)
+	go enableMetrics(c)
 
 	switch choice {
 	case api:
