@@ -7,18 +7,19 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 
 	"github.com/0xPolygonHermez/zkevm-bridge-service/bridgectrl/pb"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/log"
-	"github.com/alibaba/sentinel-golang/core/base"
-	sentinelGrpc "github.com/alibaba/sentinel-golang/pkg/adapters/grpc"
+	// "github.com/alibaba/sentinel-golang/core/base"
+	// sentinelGrpc "github.com/alibaba/sentinel-golang/pkg/adapters/grpc"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
+	// "google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/health/grpc_health_v1"
-	"google.golang.org/grpc/status"
+	// "google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
@@ -83,22 +84,24 @@ func runGRPCServer(ctx context.Context, bridgeServer pb.BridgeServiceServer, por
 		return err
 	}
 
-	// XLayer
-	// Fallback function to be triggered when there's a block error from Sentinel
-	blockErrFallbackFn := func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, blockErr *base.BlockError) (interface{}, error) {
-		// ResourceExhausted status will be mapped to code 429 in the HTTP transcoder
-		// In the future, return more different codes based on different type of BlockError?
-		return nil, status.Error(codes.ResourceExhausted, blockErr.Error())
-	}
+	server := grpc.NewServer()
 
-	// XLayer
-	server := grpc.NewServer(grpc.ChainUnaryInterceptor(
-		NewRequestMetricsInterceptor(),
-		sentinelGrpc.NewUnaryServerInterceptor(sentinelGrpc.WithUnaryServerBlockFallback(blockErrFallbackFn)),
-		NewRequestLogInterceptor(),
-		NewIPCheckInterceptor(),
-	))
-	pb.RegisterBridgeServiceServer(server, bridgeServer)
+	// // XLayer
+	// // Fallback function to be triggered when there's a block error from Sentinel
+	// blockErrFallbackFn := func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, blockErr *base.BlockError) (interface{}, error) {
+	// 	// ResourceExhausted status will be mapped to code 429 in the HTTP transcoder
+	// 	// In the future, return more different codes based on different type of BlockError?
+	// 	return nil, status.Error(codes.ResourceExhausted, blockErr.Error())
+	// }
+	//
+	// // XLayer
+	// server := grpc.NewServer(grpc.ChainUnaryInterceptor(
+	// 	NewRequestMetricsInterceptor(),
+	// 	sentinelGrpc.NewUnaryServerInterceptor(sentinelGrpc.WithUnaryServerBlockFallback(blockErrFallbackFn)),
+	// 	NewRequestLogInterceptor(),
+	// 	NewIPCheckInterceptor(),
+	// ))
+	// pb.RegisterBridgeServiceServer(server, bridgeServer)
 
 	healthService := newHealthChecker()
 	grpc_health_v1.RegisterHealthServer(server, healthService)
@@ -117,10 +120,15 @@ func runGRPCServer(ctx context.Context, bridgeServer pb.BridgeServiceServer, por
 }
 
 func preflightHandler(w http.ResponseWriter, r *http.Request) {
+	headers := []string{"Content-Type", "Accept"}
+	w.Header().Set("Access-Control-Allow-Headers", strings.Join(headers, ","))
+	methods := []string{"GET", "HEAD", "POST", "PUT", "DELETE"}
+	w.Header().Set("Access-Control-Allow-Methods", strings.Join(methods, ","))
+
 	// XLayer
-	w.Header().Set("Access-Control-Allow-Headers", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "*")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
+	// w.Header().Set("Access-Control-Allow-Headers", "*")
+	// w.Header().Set("Access-Control-Allow-Methods", "*")
+	// w.Header().Set("Access-Control-Allow-Origin", "*")
 }
 
 // allowCORS allows Cross Origin Resource Sharing from any origin.
