@@ -101,7 +101,7 @@ func runGRPCServer(ctx context.Context, bridgeServer pb.BridgeServiceServer, por
 	// 	NewRequestLogInterceptor(),
 	// 	NewIPCheckInterceptor(),
 	// ))
-	// pb.RegisterBridgeServiceServer(server, bridgeServer)
+	pb.RegisterBridgeServiceServer(server, bridgeServer)
 
 	healthService := newHealthChecker()
 	grpc_health_v1.RegisterHealthServer(server, healthService)
