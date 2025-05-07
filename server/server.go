@@ -162,9 +162,9 @@ func runRestServer(ctx context.Context, grpcPort, httpPort string) error {
 	mux := runtime.NewServeMux(muxJSONOpt, muxHealthOpt)
 
 	// XLayer
-	httpMux := http.NewServeMux()
-	httpMux.Handle(bridgeEndpointPath+"/", http.StripPrefix(bridgeEndpointPath, mux))
-	httpMux.Handle("/", mux)
+	// httpMux := http.NewServeMux()
+	// httpMux.Handle(bridgeEndpointPath+"/", http.StripPrefix(bridgeEndpointPath, mux))
+	// httpMux.Handle("/", mux)
 
 	if err := pb.RegisterBridgeServiceHandler(ctx, mux, conn); err != nil {
 		return err
@@ -173,8 +173,8 @@ func runRestServer(ctx context.Context, grpcPort, httpPort string) error {
 	srv := &http.Server{
 		ReadTimeout: 1 * time.Second, //nolint:mnd
 		Addr:        ":" + httpPort,
-		// Handler:     allowCORS(mux),
-		Handler: allowCORS(httpMux), // XLayer
+		Handler:     allowCORS(mux),
+		// Handler: allowCORS(httpMux), // XLayer
 	}
 
 	c := make(chan os.Signal, 1)
