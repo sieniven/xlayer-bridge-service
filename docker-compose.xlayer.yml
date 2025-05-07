@@ -21,7 +21,7 @@ services:
       - ZKEVM_BRIDGE_DATABASE_PORT=5432
     volumes:
       - ./test/test.keystore.claimtx:/pk/keystore.claimtxmanager
-      - ./config/xlayer-api-config.local.toml:/app/config.toml
+      - ./config/configs_xlayer/xlayer-api-config.local.toml:/app/config.toml
       - ./xlayer/sentinel/config.json:/app/sentinel_config.json
     command:
       - "/bin/sh"
@@ -41,7 +41,7 @@ services:
       - ZKEVM_BRIDGE_DATABASE_PORT=5432
     volumes:
       - ./test/test.keystore.claimtx:/pk/keystore.claimtxmanager
-      - ./config/xlayer-push-config.local.toml:/app/config.toml
+      - ./config/configs_xlayer/xlayer-push-config.local.toml:/app/config.toml
     command:
       - "/bin/sh"
       - "-c"
@@ -60,7 +60,7 @@ services:
       - ZKEVM_BRIDGE_DATABASE_PORT=5432
     volumes:
       - ./test/test.keystore.claimtx:/pk/keystore.claimtxmanager
-      - ./config/xlayer-task-config.local.toml:/app/config.toml
+      - ./config/configs_xlayer/xlayer-task-config.local.toml:/app/config.toml
     command:
       - "/bin/sh"
       - "-c"
