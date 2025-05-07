@@ -53,25 +53,40 @@ func main() {
 			Flags:   flags,
 		},
 		{
+			Name:    "runAll",
+			Aliases: []string{},
+			Usage:   "Run the xlayer bridge as a single binary",
+			Action: func(ctx *cli.Context) error {
+				return run(ctx, "all")
+			},
+			Flags: flags,
+		},
+		{
 			Name:    "runAPI",
 			Aliases: []string{},
 			Usage:   "Run the xlayer bridge API server",
-			Action:  runAPI,
-			Flags:   flags,
+			Action: func(ctx *cli.Context) error {
+				return run(ctx, api)
+			},
+			Flags: flags,
 		},
 		{
 			Name:    "runPushTask",
 			Aliases: []string{},
 			Usage:   "Run the xlayer bridge push tasks (monitor the block/batch number and push change event to FE)",
-			Action:  runPushTask,
-			Flags:   flags,
+			Action: func(ctx *cli.Context) error {
+				return run(ctx, push)
+			},
+			Flags: flags,
 		},
 		{
 			Name:    "runTask",
 			Aliases: []string{},
 			Usage:   "Run the xlayer bridge tasks, including synchronizer, claimtxman, kafka consumer",
-			Action:  runTask,
-			Flags:   flags,
+			Action: func(ctx *cli.Context) error {
+				return run(ctx, task)
+			},
+			Flags: flags,
 		},
 	}
 

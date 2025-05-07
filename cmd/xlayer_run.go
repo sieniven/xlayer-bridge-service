@@ -1,12 +1,15 @@
 package main
 
 import (
+	"context"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/0xPolygonHermez/zkevm-bridge-service/bridgectrl"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/claimtxman"
+	"github.com/0xPolygonHermez/zkevm-bridge-service/config"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/db"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/etherman"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/log"
@@ -18,7 +21,6 @@ import (
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/estimatetime"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/localcache"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/messagepush"
-	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/metrics"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/pushtask"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/redisstorage"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/sentinel"
@@ -27,30 +29,56 @@ import (
 	client "github.com/0xPolygonHermez/zkevm-bridge-service/jsonrpcclient"
 )
 
-func runAPI(ctx *cli.Context) error {
+const (
+	api  = "API"
+	push = "PUSH"
+	task = "TASK"
+)
+
+func run(ctx *cli.Context, choice string) error {
+	var err error
+
 	c, err := setupConfigAndLog(ctx)
 	if err != nil {
 		return err
 	}
 
-	if c.UpstreamCfg.Metrics.Enabled {
-		go metrics.StartMetricsHttpServer(struct {
-			Env      string
-			Endpoint string
-			Port     int
-		}{
-			Env:      c.Metrics.Env,
-			Endpoint: "",
-			Port:     c.UpstreamCfg.Metrics.Port,
-		})
-	}
+	enableMetrics(c)
 
+	switch choice {
+	case api:
+		if err = db.RunMigrations(c.UpstreamCfg.SyncDB); err != nil {
+			return err
+		}
+		if err = runAPI(ctx.Context, c); err != nil {
+			return nil
+		}
+		waitUnlessInterrupt()
+		return nil
+	case push:
+		err = runPushTask(ctx.Context, c)
+		waitUnlessInterrupt()
+		return nil
+	case task:
+		return runTask(ctx.Context, c)
+	default:
+		if err = db.RunMigrations(c.UpstreamCfg.SyncDB); err != nil {
+			return err
+		}
+		// Runs all services as one
+		if err = runAPI(ctx.Context, c); err != nil {
+			return err
+		}
+		if err = runPushTask(ctx.Context, c); err != nil {
+			return err
+		}
+		return runTask(ctx.Context, c) // Blocking
+	}
+}
+
+func runAPI(ctx context.Context, c *config.XLayerConfig) error {
 	redisStorage, err := redisstorage.NewRedisStorage(c.BridgeServer.Redis)
 	if err != nil {
-		return err
-	}
-
-	if err = db.RunMigrations(c.UpstreamCfg.SyncDB); err != nil {
 		return err
 	}
 
@@ -97,14 +125,14 @@ func runAPI(ctx *cli.Context) error {
 	l2Auths := make([]*bind.TransactOpts, len(c.UpstreamCfg.Etherman.L2URLs))
 	for i := range c.UpstreamCfg.Etherman.L2URLs {
 		nodeClient, err := utils.NewClient(
-			ctx.Context,
+			ctx,
 			c.UpstreamCfg.Etherman.L2URLs[i],
 			c.UpstreamCfg.NetworkConfig.L2PolygonBridgeAddresses[i],
 		)
 		if err != nil {
 			return err
 		}
-		auth, err := nodeClient.GetSignerFromKeystore(ctx.Context, c.UpstreamCfg.ClaimTxManager.PrivateKey)
+		auth, err := nodeClient.GetSignerFromKeystore(ctx, c.UpstreamCfg.ClaimTxManager.PrivateKey)
 		if err != nil {
 			return err
 		}
@@ -133,28 +161,10 @@ func runAPI(ctx *cli.Context) error {
 		return err
 	}
 
-	waitUnlessInterrupt()
 	return err
 }
 
-func runPushTask(ctx *cli.Context) error {
-	c, err := setupConfigAndLog(ctx)
-	if err != nil {
-		return err
-	}
-
-	if c.UpstreamCfg.Metrics.Enabled {
-		go metrics.StartMetricsHttpServer(struct {
-			Env      string
-			Endpoint string
-			Port     int
-		}{
-			Env:      c.Metrics.Env,
-			Endpoint: "",
-			Port:     c.UpstreamCfg.Metrics.Port,
-		})
-	}
-
+func runPushTask(ctx context.Context, c *config.XLayerConfig) error {
 	apiStorage, err := db.NewStorage(c.UpstreamCfg.BridgeServer.DB)
 	if err != nil {
 		return err
@@ -203,38 +213,20 @@ func runPushTask(ctx *cli.Context) error {
 		return err
 	}
 
-	go l1BlockNumTask.Start(ctx.Context)
-	go syncCommitBatchTask.Start(ctx.Context)
-	go syncVerifyBatchTask.Start(ctx.Context)
+	go l1BlockNumTask.Start(ctx)
+	go syncCommitBatchTask.Start(ctx)
+	go syncVerifyBatchTask.Start(ctx)
 
-	waitUnlessInterrupt()
 	return nil
 }
 
-func runTask(ctx *cli.Context) error {
+func runTask(ctx context.Context, c *config.XLayerConfig) error {
 	// Use this to run Go routines
-	errs, _ := errgroup.WithContext(ctx.Context)
-
-	c, err := setupConfigAndLog(ctx)
-	if err != nil {
-		return err
-	}
+	errs, _ := errgroup.WithContext(ctx)
 
 	messagebridge.InitUSDCLxLyProcessor(c.BusinessConfig.USDCContractAddresses, c.BusinessConfig.USDCTokenAddresses)
 	messagebridge.InitWstETHProcessor(c.BusinessConfig.WstETHContractAddresses, c.BusinessConfig.WstETHTokenAddresses)
 	messagebridge.InitEURCProcessor(c.BusinessConfig.EURCContractAddresses, c.BusinessConfig.EURCTokenAddresses)
-
-	if c.UpstreamCfg.Metrics.Enabled {
-		go metrics.StartMetricsHttpServer(struct {
-			Env      string
-			Endpoint string
-			Port     int
-		}{
-			Env:      c.Metrics.Env,
-			Endpoint: "",
-			Port:     c.UpstreamCfg.Metrics.Port,
-		})
-	}
 
 	// Initialize all stores
 	apiStorage, err := db.NewStorage(c.UpstreamCfg.BridgeServer.DB)
@@ -267,7 +259,7 @@ func runTask(ctx *cli.Context) error {
 	var bridgeController *bridgectrl.BridgeController
 	if c.UpstreamCfg.BridgeController.Store == "postgres" {
 		bridgeController, err = bridgectrl.NewBridgeController(
-			ctx.Context, c.UpstreamCfg.BridgeController, networkIDs, storage)
+			ctx, c.UpstreamCfg.BridgeController, networkIDs, storage)
 		if err != nil {
 			return err
 		}
@@ -305,7 +297,7 @@ func runTask(ctx *cli.Context) error {
 		chsSyncedL2 = append(chsSyncedL2, chSyncedL2)
 
 		sync, err := synchronizer.NewSynchronizer(
-			ctx.Context, storage, bridgeController,
+			ctx, storage, bridgeController,
 			l2EthermanClient, zkEVMClient, 0,
 			chExitRootEventL2, nil, chSyncedL2,
 			c.UpstreamCfg.Synchronizer, []uint32{}, c.UpstreamCfg.NetworkConfig.RequireSovereignChainSmcs[i],
@@ -324,21 +316,21 @@ func runTask(ctx *cli.Context) error {
 		errs.Go(cliSyncL2.Sync)
 
 		if c.UpstreamCfg.ClaimTxManager.Enabled {
-			nodeClient, err := utils.NewClient(ctx.Context, L2URL, c.UpstreamCfg.NetworkConfig.L2PolygonBridgeAddresses[i])
+			nodeClient, err := utils.NewClient(ctx, L2URL, c.UpstreamCfg.NetworkConfig.L2PolygonBridgeAddresses[i])
 			if err != nil {
 				return err
 			}
-			nonceCache, err := claimtxman.NewNonceCache(ctx.Context, nodeClient)
+			nonceCache, err := claimtxman.NewNonceCache(ctx, nodeClient)
 			if err != nil {
 				log.Fatalf("error creating nonceCache for L2 %s. Error: %v", L2URL, err)
 			}
-			auth, err := nodeClient.GetSignerFromKeystore(ctx.Context, c.UpstreamCfg.ClaimTxManager.PrivateKey)
+			auth, err := nodeClient.GetSignerFromKeystore(ctx, c.UpstreamCfg.ClaimTxManager.PrivateKey)
 			if err != nil {
 				return err
 			}
 
 			claimTxManager, err := claimtxman.NewClaimTxManager(
-				ctx.Context, c.UpstreamCfg.ClaimTxManager, chsExitRootEvent[i], chsSyncedL2[i],
+				ctx, c.UpstreamCfg.ClaimTxManager, chsExitRootEvent[i], chsSyncedL2[i],
 				L2URL, networkIDs[i+1], c.UpstreamCfg.NetworkConfig.L2PolygonBridgeAddresses[i], bridgeService,
 				storage, rollupID, l2Ethermans[i], nonceCache, auth,
 			)
@@ -354,7 +346,7 @@ func runTask(ctx *cli.Context) error {
 	}
 
 	sync, err := synchronizer.NewSynchronizer(
-		ctx.Context, storage, bridgeController, l1Etherman,
+		ctx, storage, bridgeController, l1Etherman,
 		nil, c.UpstreamCfg.NetworkConfig.GenBlockNumber, nil,
 		chsExitRootEvent, chSynced, c.UpstreamCfg.Synchronizer, networkIDs, false,
 	)
@@ -391,7 +383,7 @@ func runTask(ctx *cli.Context) error {
 	if !c.UpstreamCfg.ClaimTxManager.Enabled {
 		log.Warn("ClaimTxManager not configured")
 		for i := range chsExitRootEvent {
-			monitorChannel(ctx.Context, chsExitRootEvent[i], chsSyncedL2[i], networkIDs[i+1], storage)
+			monitorChannel(ctx, chsExitRootEvent[i], chsSyncedL2[i], networkIDs[i+1], storage)
 		}
 	}
 
@@ -406,7 +398,7 @@ func runTask(ctx *cli.Context) error {
 			}
 		}()
 		log.Debugf("finish initializing kafka consumer")
-		go coinKafkaConsumer.Start(ctx.Context)
+		go coinKafkaConsumer.Start(ctx)
 	}
 
 	return errs.Wait()

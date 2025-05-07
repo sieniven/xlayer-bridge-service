@@ -7,12 +7,14 @@ DOCKER_COMPOSE_BRIDGE_KAFKA := xlayer-bridge-coin-kafka
 DOCKER_COMPOSE_BRIDGE_API := xlayer-bridge-service-api
 DOCKER_COMPOSE_BRIDGE_PUSH := xlayer-bridge-service-push
 DOCKER_COMPOSE_BRIDGE_TASK := xlayer-bridge-service-task
+DOCKER_COMPOSE_BRIDGE_SINGLE := xlayer-bridge-service
 
 RUN_REDIS := $(DOCKER_COMPOSE) up -d $(DOCKER_COMPOSE_REDIS)
 RUN_BRIDGE_KAFKA := $(DOCKER_COMPOSE) up -d $(DOCKER_COMPOSE_BRIDGE_KAFKA)
 RUN_BRIDGE_API := $(DOCKER_COMPOSE) up -d $(DOCKER_COMPOSE_BRIDGE_API)
 RUN_BRIDGE_PUSH := $(DOCKER_COMPOSE) up -d $(DOCKER_COMPOSE_BRIDGE_PUSH)
 RUN_BRIDGE_TASK := $(DOCKER_COMPOSE) up -d $(DOCKER_COMPOSE_BRIDGE_TASK)
+RUN_BRIDGE_SINGLE := $(DOCKER_COMPOSE) up -d $(DOCKER_COMPOSE_BRIDGE_SINGLE)
 
 # This assumes you are running xlayer erigon locally.
 
@@ -39,16 +41,24 @@ run-task:
 	sleep 2
 	$(RUN_BRIDGE_TASK)
 
-# NOTE: problem currently configured to cdk-erigon, not zkevm-node
-run-all-xl:
-	$(RUN_L1_NETWORK)
-	sleep 5
-	$(RUN_ZKPROVER)
-	$(RUN_NODE)
+run-as-one:
 	$(RUN_DBS)
 	$(RUN_REDIS)
 	$(RUN_BRIDGE_KAFKA)
-	sleep 1
+	sleep 2
+	$(RUN_BRIDGE_SINGLE)
+
+# For e2e test
+run-all-xl:
+	$(RUN_DBS)
+	$(RUN_L1_NETWORK)
+	sleep 5
+	$(RUN_ZKPROVER)
+	sleep 3
+	$(RUN_NODE)
+	$(RUN_REDIS)
+	$(RUN_BRIDGE_KAFKA)
+	sleep 7
 	$(RUN_BRIDGE_API)
 	sleep 1
 	$(RUN_BRIDGE_PUSH)
@@ -57,3 +67,7 @@ run-all-xl:
 test-full-xl: build-docker stop run-all-xl
 	sleep 3
 	trap '$(STOP)' EXIT; MallocNanoZone=0 go test -v -failfast -race -p 1 -timeout 2400s ./test/e2e/... -count 1 -tags='e2e'
+
+test-edge-xl: build-docker stop run-all-xl
+	sleep 3
+	trap '$(STOP)' EXIT; MallocNanoZone=0 go test -v -failfast -race -p 1 -timeout 2400s ./test/e2e/... -count 1 -tags='edge'

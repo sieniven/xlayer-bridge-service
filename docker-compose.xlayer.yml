@@ -6,6 +6,30 @@ networks:
     external: true
 
 services:
+  xlayer-bridge-service:
+    container_name: xlayer-bridge-service
+    image: zkevm-bridge-service
+    ports:
+      - 8080:8080
+      - 9090:9090
+      - 9300:9091
+      - 9301:9091
+      - 9302:9091
+    environment:
+      - ZKEVM_BRIDGE_DATABASE_USER=test_user
+      - ZKEVM_BRIDGE_DATABASE_PASSWORD=test_password
+      - ZKEVM_BRIDGE_DATABASE_NAME=test_db
+      - ZKEVM_BRIDGE_DATABASE_HOST=zkevm-bridge-db
+      - ZKEVM_BRIDGE_DATABASE_PORT=5432
+    volumes:
+      - ./test/test.keystore.claimtx:/pk/keystore.claimtxmanager
+      - ./config/configs_xlayer/xlayer-all-config.local.toml:/app/config.toml
+      - ./xlayer/sentinel/config.json:/app/sentinel_config.json
+    command:
+      - "/bin/sh"
+      - "-c"
+      - "/app/zkevm-bridge runAll --cfg /app/config.toml"
+
   xlayer-bridge-service-api:
     container_name: xlayer-bridge-service-api
     image: zkevm-bridge-service

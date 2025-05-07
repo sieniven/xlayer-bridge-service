@@ -11,6 +11,7 @@ import (
 	"github.com/0xPolygonHermez/zkevm-bridge-service/log"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/iprestriction"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/messagepush"
+	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/metrics"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/nacos"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/tokenlogoinfo"
 
@@ -98,4 +99,18 @@ func registerNacos(cfg nacos.Config) {
 		err = nacos.InitNacosClient(cfg.NacosUrls, cfg.NamespaceId, cfg.ApplicationName, cfg.ExternalListenAddr)
 	}
 	log.Debugf("Init nacos NacosUrls[%s] NamespaceId[%s] ApplicationName[%s] ExternalListenAddr[%s] Error[%v]", cfg.NacosUrls, cfg.NamespaceId, cfg.ApplicationName, cfg.ExternalListenAddr, err)
+}
+
+func enableMetrics(c *config.XLayerConfig) {
+	if c.UpstreamCfg.Metrics.Enabled {
+		go metrics.StartMetricsHttpServer(struct {
+			Env      string
+			Endpoint string
+			Port     int
+		}{
+			Env:      c.Metrics.Env,
+			Endpoint: "",
+			Port:     c.UpstreamCfg.Metrics.Port,
+		})
+	}
 }
