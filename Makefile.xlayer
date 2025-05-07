@@ -38,3 +38,5 @@ run-task:
 	$(RUN_BRIDGE_KAFKA)
 	sleep 2
 	$(RUN_BRIDGE_TASK)
+
+make run-bridge-xl: run-api run-push run-task
