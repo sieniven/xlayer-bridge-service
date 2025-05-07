@@ -1,3 +1,4 @@
+# NOTE: Run with X Layer erigon
 [Log]
 Level = "debug"
 Outputs = ["stdout"]
