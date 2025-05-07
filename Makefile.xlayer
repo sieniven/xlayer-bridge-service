@@ -41,15 +41,14 @@ run-task:
 	sleep 2
 	$(RUN_BRIDGE_TASK)
 
-run-as-one:
+run-single:
 	$(RUN_DBS)
 	$(RUN_REDIS)
 	$(RUN_BRIDGE_KAFKA)
 	sleep 2
 	$(RUN_BRIDGE_SINGLE)
 
-# For e2e test
-run-all-xl:
+run-as-one:
 	$(RUN_DBS)
 	$(RUN_L1_NETWORK)
 	sleep 5
@@ -59,15 +58,12 @@ run-all-xl:
 	$(RUN_REDIS)
 	$(RUN_BRIDGE_KAFKA)
 	sleep 7
-	$(RUN_BRIDGE_API)
-	sleep 1
-	$(RUN_BRIDGE_PUSH)
-	$(RUN_BRIDGE_TASK)
+	$(DOCKER_COMPOSE) up -d xlayer-bridge-service-e2e
 
-test-full-xl: build-docker stop run-all-xl
+test-full-xl: build-docker stop run-as-one
 	sleep 3
 	trap '$(STOP)' EXIT; MallocNanoZone=0 go test -v -failfast -race -p 1 -timeout 2400s ./test/e2e/... -count 1 -tags='e2e'
 
-test-edge-xl: build-docker stop run-all-xl
+test-edge-xl: build-docker stop run-as-one
 	sleep 3
 	trap '$(STOP)' EXIT; MallocNanoZone=0 go test -v -failfast -race -p 1 -timeout 2400s ./test/e2e/... -count 1 -tags='edge'

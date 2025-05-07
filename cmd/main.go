@@ -48,18 +48,11 @@ func main() {
 		{
 			Name:    "run",
 			Aliases: []string{},
-			Usage:   "Run the zkevm bridge",
-			Action:  start,
-			Flags:   flags,
-		},
-		{
-			Name:    "runAll",
-			Aliases: []string{},
 			Usage:   "Run the xlayer bridge as a single binary",
 			Action: func(ctx *cli.Context) error {
 				return run(ctx, "all")
 			},
-			Flags: flags,
+			Flags:   flags,
 		},
 		{
 			Name:    "runAPI",
