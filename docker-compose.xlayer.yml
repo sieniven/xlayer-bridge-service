@@ -3,7 +3,6 @@ version: '3.5'
 networks:
   default:
     name: erigon
-    external: true
 
 services:
   xlayer-bridge-service:

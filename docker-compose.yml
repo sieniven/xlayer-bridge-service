@@ -1,6 +1,4 @@
 version: '3.5'
-include:
-  - docker-compose.xlayer.yml
 services:
   zkevm-state-db:
     container_name: zkevm-state-db

@@ -1,6 +1,6 @@
 include version.mk
 
-DOCKER_COMPOSE := docker compose -f docker-compose.yml
+DOCKER_COMPOSE := docker compose -f docker-compose.yml -f docker-compose.xlayer.yml
 
 DOCKER_COMPOSE_REDIS := xlayer-bridge-redis
 DOCKER_COMPOSE_BRIDGE_KAFKA := xlayer-bridge-coin-kafka
