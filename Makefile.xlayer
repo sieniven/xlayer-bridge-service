@@ -39,4 +39,21 @@ run-task:
 	sleep 2
 	$(RUN_BRIDGE_TASK)
 
-make run-bridge-xl: run-api run-push run-task
+# NOTE: problem currently configured to cdk-erigon, not zkevm-node
+run-all-xl:
+	$(RUN_L1_NETWORK)
+	sleep 5
+	$(RUN_ZKPROVER)
+	$(RUN_NODE)
+	$(RUN_DBS)
+	$(RUN_REDIS)
+	$(RUN_BRIDGE_KAFKA)
+	sleep 1
+	$(RUN_BRIDGE_API)
+	sleep 1
+	$(RUN_BRIDGE_PUSH)
+	$(RUN_BRIDGE_TASK)
+
+test-full-xl: build-docker stop run-all-xl
+	sleep 3
+	trap '$(STOP)' EXIT; MallocNanoZone=0 go test -v -failfast -race -p 1 -timeout 2400s ./test/e2e/... -count 1 -tags='e2e'
