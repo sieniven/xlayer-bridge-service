@@ -138,6 +138,10 @@ services:
       - 2181
 
   xlayer-bridge-service-e2e:
+    depends_on:
+      - xlayer-bridge-redis
+      - xlayer-bridge-coin-kafka
+      - zkevm-node
     container_name: xlayer-bridge-service-e2e
     image: zkevm-bridge-service
     ports:
@@ -156,12 +160,49 @@ services:
       - ./xlayer/sentinel/config.json:/app/sentinel_config.json
     links:
       - "zkevm-bridge-db"
+      - "zkevm-node"
     command:
       - "/bin/sh"
       - "-c"
-      - "/app/zkevm-bridge run --cfg /app/config.toml"
+      - "sleep 7 && /app/zkevm-bridge run --cfg /app/config.toml"
 
   zkevm-bridge-db:
     extends:
       file: docker-compose.yml
       service: zkevm-bridge-db
+
+  zkevm-state-db:
+    extends:
+      file: docker-compose.yml
+      service: zkevm-state-db
+
+  zkevm-pool-db:
+    extends:
+      file: docker-compose.yml
+      service: zkevm-pool-db
+
+  zkevm-node:
+    depends_on:
+      - zkevm-prover
+      - zkevm-mock-l1-network
+    extends:
+      file: docker-compose.yml
+      service: zkevm-node
+    links:
+      - "zkevm-state-db"
+      - "zkevm-pool-db"
+      - "zkevm-mock-l1-network"
+      - "zkevm-prover"
+
+  zkevm-mock-l1-network:
+    extends:
+      file: docker-compose.yml
+      service: zkevm-mock-l1-network
+
+  zkevm-prover:
+    restart: on-failure
+    extends:
+      file: docker-compose.yml
+      service: zkevm-prover
+    links:
+      - "zkevm-state-db"

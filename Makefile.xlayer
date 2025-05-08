@@ -1,6 +1,6 @@
 include version.mk
 
-DOCKER_COMPOSE := docker compose -f docker-compose.xlayer.yml
+DOCKER_COMPOSE_XL := docker-compose -f docker-compose.xlayer.yml -f docker-compose.yml
 
 DOCKER_COMPOSE_REDIS := xlayer-bridge-redis
 DOCKER_COMPOSE_BRIDGE_KAFKA := xlayer-bridge-coin-kafka
@@ -9,24 +9,27 @@ DOCKER_COMPOSE_BRIDGE_PUSH := xlayer-bridge-service-push
 DOCKER_COMPOSE_BRIDGE_TASK := xlayer-bridge-service-task
 DOCKER_COMPOSE_BRIDGE_SINGLE := xlayer-bridge-service
 
-RUN_REDIS := $(DOCKER_COMPOSE) up -d $(DOCKER_COMPOSE_REDIS)
-RUN_BRIDGE_KAFKA := $(DOCKER_COMPOSE) up -d $(DOCKER_COMPOSE_BRIDGE_KAFKA)
-RUN_BRIDGE_API := $(DOCKER_COMPOSE) up -d $(DOCKER_COMPOSE_BRIDGE_API)
-RUN_BRIDGE_PUSH := $(DOCKER_COMPOSE) up -d $(DOCKER_COMPOSE_BRIDGE_PUSH)
-RUN_BRIDGE_TASK := $(DOCKER_COMPOSE) up -d $(DOCKER_COMPOSE_BRIDGE_TASK)
-RUN_BRIDGE_SINGLE := $(DOCKER_COMPOSE) up -d $(DOCKER_COMPOSE_BRIDGE_SINGLE)
+RUN_REDIS := $(DOCKER_COMPOSE_XL) up -d $(DOCKER_COMPOSE_REDIS)
+RUN_BRIDGE_KAFKA := $(DOCKER_COMPOSE_XL) up -d $(DOCKER_COMPOSE_BRIDGE_KAFKA)
+RUN_BRIDGE_API := $(DOCKER_COMPOSE_XL) up -d $(DOCKER_COMPOSE_BRIDGE_API)
+RUN_BRIDGE_PUSH := $(DOCKER_COMPOSE_XL) up -d $(DOCKER_COMPOSE_BRIDGE_PUSH)
+RUN_BRIDGE_TASK := $(DOCKER_COMPOSE_XL) up -d $(DOCKER_COMPOSE_BRIDGE_TASK)
+RUN_BRIDGE_SINGLE := $(DOCKER_COMPOSE_XL) up -d $(DOCKER_COMPOSE_BRIDGE_SINGLE)
 
 # This assumes you are running xlayer erigon locally.
 
-run-kafka:
-	$(RUN_BRIDGE_KAFKA)
+# Important for verifying docker compose allowed syntax on test machines.
+version:
+	$(DOCKER_COMPOSE_XL) version
 
+# Run with cdk-erigon 
 run-api:
 	$(RUN_DBS)
 	$(RUN_REDIS)
 	sleep 1
 	$(RUN_BRIDGE_API)
 
+# Run with cdk-erigon 
 run-push:
 	$(RUN_DBS)
 	$(RUN_REDIS)
@@ -34,6 +37,7 @@ run-push:
 	sleep 3
 	$(RUN_BRIDGE_PUSH)
 
+# Run with cdk-erigon 
 run-task:
 	$(RUN_DBS)
 	$(RUN_REDIS)
@@ -41,6 +45,7 @@ run-task:
 	sleep 3
 	$(RUN_BRIDGE_TASK)
 
+# Run with cdk-erigon 
 run-single:
 	$(RUN_DBS)
 	$(RUN_REDIS)
@@ -48,22 +53,19 @@ run-single:
 	sleep 3
 	$(RUN_BRIDGE_SINGLE)
 
-run-as-one:
-	$(RUN_DBS)
-	$(RUN_L1_NETWORK)
-	sleep 5
-	$(RUN_ZKPROVER)
-	sleep 3
-	$(RUN_NODE)
-	$(RUN_REDIS)
-	$(RUN_BRIDGE_KAFKA)
-	sleep 7
-	$(DOCKER_COMPOSE) up -d xlayer-bridge-service-e2e
+# Run on Linux test machine
+run-e2e:
+	# TODO: wait before starting e2e service
+	$(DOCKER_COMPOSE_XL) up -d xlayer-bridge-service-e2e
 
-test-full-xl: build-docker stop run-as-one
-	sleep 3
+# Run on Linux test machine
+test-full-xl: build-docker stop run-e2e
+	# Need time for:
+	# 1) mt.root to be populated from bridge service
+	# 2) global exit root to be updated
+	sleep 10
 	trap '$(STOP)' EXIT; MallocNanoZone=0 go test -v -failfast -race -p 1 -timeout 2400s ./test/e2e/... -count 1 -tags='e2e'
 
-test-edge-xl: build-docker stop run-as-one
-	sleep 3
+# Run on Linux test machine
+test-edge-xl: build-docker stop
 	trap '$(STOP)' EXIT; MallocNanoZone=0 go test -v -failfast -race -p 1 -timeout 2400s ./test/e2e/... -count 1 -tags='edge'
