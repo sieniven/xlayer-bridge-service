@@ -326,6 +326,17 @@ func (s *ClientSynchronizer) syncBlocks(lastBlockSynced etherman.Block) (*etherm
 		// Name can be different in the order struct. This name is an identifier to check if the next info that must be stored in the db.
 		// The value pos (position) tells what is the array index where this value is.
 		start := time.Now()
+
+		// XLayer
+		// GetRollupInfoByBlockRange returns an error when block range exceeds 1000.
+		// When that happens, the block syncing stops. Instead, we will capped it at its max.
+		const maxBlkRange = 1000
+		if toBlock-fromBlock+1 > maxBlkRange {
+			newToBlock := fromBlock + maxBlkRange - 1
+			log.Warnw("Block range exceeded, capping block range...", "from", fromBlock, "old to", toBlock, "new to", newToBlock)
+			toBlock = newToBlock
+		}
+
 		blocks, order, err := s.etherMan.GetRollupInfoByBlockRange(s.ctx, fromBlock, &toBlock)
 		metrics.ReadL1DataTime(time.Since(start))
 		if err != nil {
