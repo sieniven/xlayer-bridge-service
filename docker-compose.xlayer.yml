@@ -165,7 +165,7 @@ services:
     command:
       - "/bin/sh"
       - "-c"
-      - "sleep 7 && /app/zkevm-bridge run --cfg /app/config.toml"
+      - "/app/zkevm-bridge run --cfg /app/config.toml"
 
   zkevm-bridge-db:
     extends:
