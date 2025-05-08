@@ -63,8 +63,8 @@ test-full-xl: build-docker stop run-e2e
 	# 1) mt.root to be populated from bridge service
 	# 2) global exit root to be updated
 	sleep 10
-	trap '$(STOP)' EXIT; MallocNanoZone=0 go test -v -failfast -race -p 1 -timeout 2400s ./test/e2e/... -count 1 -tags='e2e'
+	MallocNanoZone=0 go test -v -failfast -race -p 1 -timeout 2400s ./test/e2e/... -count 1 -tags='e2e'
 
 # Run on Linux test machine
 test-edge-xl: build-docker stop
-	trap '$(STOP)' EXIT; MallocNanoZone=0 go test -v -failfast -race -p 1 -timeout 2400s ./test/e2e/... -count 1 -tags='edge'
+	MallocNanoZone=0 go test -v -failfast -race -p 1 -timeout 2400s ./test/e2e/... -count 1 -tags='edge'
