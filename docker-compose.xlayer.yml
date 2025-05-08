@@ -3,6 +3,7 @@ version: '3.5'
 networks:
   default:
     name: erigon
+    external: true
 
 services:
   xlayer-bridge-service:
@@ -22,6 +23,8 @@ services:
       - ./test/test.keystore.claimtx:/pk/keystore.claimtxmanager
       - ./config/configs_xlayer/xlayer-all-config.local.toml:/app/config.toml
       - ./xlayer/sentinel/config.json:/app/sentinel_config.json
+    links:
+      - "zkevm-bridge-db"
     command:
       - "/bin/sh"
       - "-c"
@@ -44,6 +47,8 @@ services:
       - ./test/test.keystore.claimtx:/pk/keystore.claimtxmanager
       - ./config/configs_xlayer/xlayer-api-config.local.toml:/app/config.toml
       - ./xlayer/sentinel/config.json:/app/sentinel_config.json
+    links:
+      - "zkevm-bridge-db"
     command:
       - "/bin/sh"
       - "-c"
@@ -63,6 +68,8 @@ services:
     volumes:
       - ./test/test.keystore.claimtx:/pk/keystore.claimtxmanager
       - ./config/configs_xlayer/xlayer-push-config.local.toml:/app/config.toml
+    links:
+      - "zkevm-bridge-db"
     command:
       - "/bin/sh"
       - "-c"
@@ -82,6 +89,8 @@ services:
     volumes:
       - ./test/test.keystore.claimtx:/pk/keystore.claimtxmanager
       - ./config/configs_xlayer/xlayer-task-config.local.toml:/app/config.toml
+    links:
+      - "zkevm-bridge-db"
     command:
       - "/bin/sh"
       - "-c"
@@ -145,7 +154,14 @@ services:
       - ./test/test.keystore.claimtx:/pk/keystore.claimtxmanager
       - ./config/configs_xlayer/xlayer-config.e2e.toml:/app/config.toml
       - ./xlayer/sentinel/config.json:/app/sentinel_config.json
+    links:
+      - "zkevm-bridge-db"
     command:
       - "/bin/sh"
       - "-c"
       - "/app/zkevm-bridge run --cfg /app/config.toml"
+
+  zkevm-bridge-db:
+    extends:
+      file: docker-compose.yml
+      service: zkevm-bridge-db

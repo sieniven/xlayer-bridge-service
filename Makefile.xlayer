@@ -1,6 +1,6 @@
 include version.mk
 
-DOCKER_COMPOSE := docker compose -f docker-compose.yml -f docker-compose.xlayer.yml
+DOCKER_COMPOSE := docker compose -f docker-compose.xlayer.yml
 
 DOCKER_COMPOSE_REDIS := xlayer-bridge-redis
 DOCKER_COMPOSE_BRIDGE_KAFKA := xlayer-bridge-coin-kafka
@@ -31,21 +31,21 @@ run-push:
 	$(RUN_DBS)
 	$(RUN_REDIS)
 	$(RUN_BRIDGE_KAFKA)
-	sleep 2
+	sleep 3
 	$(RUN_BRIDGE_PUSH)
 
 run-task:
 	$(RUN_DBS)
 	$(RUN_REDIS)
 	$(RUN_BRIDGE_KAFKA)
-	sleep 2
+	sleep 3
 	$(RUN_BRIDGE_TASK)
 
 run-single:
 	$(RUN_DBS)
 	$(RUN_REDIS)
 	$(RUN_BRIDGE_KAFKA)
-	sleep 2
+	sleep 3
 	$(RUN_BRIDGE_SINGLE)
 
 run-as-one:
