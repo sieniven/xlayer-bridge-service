@@ -1,6 +1,6 @@
 # NOTE: Run with X Layer erigon
 [Log]
-Level = "info"
+Level = "debug"
 Outputs = ["stdout"]
 
 [ClaimTxManager]
