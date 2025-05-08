@@ -55,7 +55,6 @@ run-single:
 
 # Run on Linux test machine
 run-e2e:
-	# TODO: wait before starting e2e service
 	$(DOCKER_COMPOSE_XL) up -d xlayer-bridge-service-e2e
 
 # Run on Linux test machine
