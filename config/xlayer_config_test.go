@@ -10,7 +10,7 @@ import (
 
 // Assert XLayer configs can be parsed into config.
 func TestXLayerConfig(t *testing.T) {
-	c, err := Load("./xlayer-test-config.local.toml", "")
+	c, err := Load("./configs_xlayer/xlayer-test-config.local.toml", "")
 	if err != nil {
 		t.Fatal(err)
 	}
