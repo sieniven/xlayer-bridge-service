@@ -142,6 +142,7 @@ services:
       - xlayer-bridge-redis
       - xlayer-bridge-coin-kafka
       - zkevm-node
+    restart: on-failure
     container_name: xlayer-bridge-service-e2e
     image: zkevm-bridge-service
     ports:
