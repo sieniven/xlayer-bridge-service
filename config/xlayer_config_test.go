@@ -20,6 +20,8 @@ func TestXLayerConfig(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	t.Logf("upstream config:\n%+v\n\n", cfg.UpstreamCfg)
+
 	fmt.Printf("Etherman.L1ChainId = %+v\n", cfg.Etherman.L1ChainId)
 	assert.True(t, viper.IsSet("Etherman.L1ChainId"))
 	fmt.Printf("Etherman.L2ChainIds = %+v\n", cfg.Etherman.L2ChainIds)
@@ -44,4 +46,6 @@ func TestXLayerConfig(t *testing.T) {
 	assert.True(t, viper.IsSet("CoinKafkaConsumer"))
 	fmt.Printf("MessagePushProducer = %+v\n", cfg.MessagePushProducer)
 	assert.True(t, viper.IsSet("MessagePushProducer"))
+	fmt.Printf("LargeTxUsdLimit = %+v\n", cfg.Synchronizer.LargeTxUsdLimit)
+	assert.True(t, viper.IsSet("Synchronizer.LargeTxUsdLimit"))
 }

@@ -37,6 +37,10 @@ type claimTxManCfg struct {
 	OptClaim bool `mapstructure:"OptClaim"`
 }
 
+type syncCfg struct {
+	LargeTxUsdLimit uint64 `mapstructure:"LargeTxUsdLimit"`
+}
+
 // We will use this config to wrap the upstream config and load
 // our XLayer specfic values in this struct.
 type XLayerConfig struct {
@@ -49,6 +53,7 @@ type XLayerConfig struct {
 	BridgeServer   serverCfg
 	Metrics        metricsCfg
 	ClaimTxManager claimTxManCfg
+	Synchronizer   syncCfg
 
 	// Pure XLayer configs
 	Apollo                 apolloconfig.Config

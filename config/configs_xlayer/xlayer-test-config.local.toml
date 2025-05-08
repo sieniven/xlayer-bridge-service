@@ -41,6 +41,7 @@ L2ChainIds = [1001] # XLayer
 SyncInterval = "1s"
 SyncChunkSize = 100
 ForceL2SyncChunk = false
+LargeTxUsdLimit = 1234
 
 [BridgeController]
 Store = "postgres"
