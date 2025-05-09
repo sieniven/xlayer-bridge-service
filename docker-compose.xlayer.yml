@@ -28,7 +28,7 @@ services:
     command:
       - "/bin/sh"
       - "-c"
-      - "/app/zkevm-bridge run --cfg /app/config.toml"
+      - "/app/zkevm-bridge runAll --cfg /app/config.toml"
 
   xlayer-bridge-service-api:
     container_name: xlayer-bridge-service-api
@@ -165,7 +165,7 @@ services:
     command:
       - "/bin/sh"
       - "-c"
-      - "/app/zkevm-bridge run --cfg /app/config.toml"
+      - "/app/zkevm-bridge runAll --cfg /app/config.toml"
 
   zkevm-bridge-db:
     extends:
