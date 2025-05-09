@@ -57,7 +57,7 @@ func main() {
 		{
 			Name:    "run",
 			Aliases: []string{},
-			Usage:   "Run the xlayer bridge as a single binary",
+			Usage:   "Run the xlayer bridge as a single binary. If false, runs normal bridge.",
 			Action: func(ctx *cli.Context) error {
 				if ctx.Bool(flagXLayer) {
 					return run(ctx, "all")
