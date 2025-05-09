@@ -29,6 +29,10 @@ var (
 	largeTxUsdLimit = apolloconfig.NewIntEntry[uint64]("Synchronizer.LargeTxUsdLimit", 100000) //nolint:gomnd
 )
 
+func init() {
+	log.Info("Synchronizer.LargeTxUsdLimit = ", largeTxUsdLimit)
+}
+
 func (s *ClientSynchronizer) beforeProcessDeposit(deposit *etherman.Deposit) {
 	messagebridge.ReplaceDepositDestAddresses(deposit)
 }

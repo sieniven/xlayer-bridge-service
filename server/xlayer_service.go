@@ -64,6 +64,12 @@ func (s *bridgeService) WithMessagePushProducer(producer messagepush.KafkaProduc
 	return s
 }
 
+func (s *bridgeService) LogConfig() {
+	// Currently logs apollo loaded configs as a sanity check
+	log.Info("BridgeServer.DefaultPageLimit = ", s.defaultPageLimit)
+	log.Info("BridgeServer.MaxPageLimit = ", s.maxPageLimit)
+}
+
 func (s *bridgeService) SetupL2Clients(
 	l2NodeClients []*utils.Client,
 	l2Auths []*bind.TransactOpts,

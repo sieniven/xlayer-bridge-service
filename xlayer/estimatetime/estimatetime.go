@@ -59,6 +59,8 @@ func NewCalculator(storage interface{}) (Calculator, error) {
 		defaultEstTimeConfig: apolloconfig.NewIntSliceEntry[uint32](estTimeConfigKey, []uint32{defaultL1EstimateTime, defaultL2EstimateTime}),
 		sampleLimit:          apolloconfig.NewIntEntry[uint](sampleLimitConfigKey, defaultSampleLimit),
 	}
+	log.Info("estimateTime.defaultSampleLimit = ", c.defaultEstTimeConfig)
+	log.Info("estimateTime.sampleLimit = ", c.sampleLimit)
 	def := c.defaultEstTimeConfig.Get()
 	for i := 0; i < estTimeSize; i++ {
 		c.estimateTime[i] = def[i]

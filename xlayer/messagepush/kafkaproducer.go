@@ -87,12 +87,17 @@ func NewKafkaProducer(cfg Config) (KafkaProducer, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "NewKafkaProducer: NewSyncProducer error")
 	}
-	return &kafkaProducerImpl{
+	kp := kafkaProducerImpl{
 		producer:       producer,
 		defaultTopic:   apolloconfig.NewStringEntry("MessagePushProducer.Topic", cfg.Topic),
 		defaultPushKey: apolloconfig.NewStringEntry("MessagePushProducer.PushKey", cfg.PushKey),
 		bizCode:        apolloconfig.NewStringEntry("MessagePushProducer.BizCode", BizCodeBridgeOrder),
-	}, nil
+	}
+
+	log.Info("MessagePushProducer.Topic = ", kp.defaultTopic)
+	log.Info("MessagePushProducer.PushKey = ", kp.defaultPushKey)
+	log.Info("MessagePushProducer.BizCode = ", kp.bizCode)
+	return &kp, nil
 }
 
 // Produce send a message to the Kafka topic

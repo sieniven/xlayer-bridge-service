@@ -80,10 +80,14 @@ func NewRedisStorage(cfg Config) (RedisStorage, error) {
 		return nil, errors.Wrap(err, "cannot connect to redis server")
 	}
 	log.Debugf("redis health check done, result: %v", res)
-	return &redisStorageImpl{client: client,
+
+	rds := redisStorageImpl{client: client,
 		enableCoinPriceCfg: apolloconfig.NewBoolEntry("CoinPrice.Enabled", cfg.EnablePrice),
 		keyPrefix:          apolloconfig.NewStringEntry("Redis.KeyPrefix", cfg.KeyPrefix),
-	}, nil
+	}
+	log.Info("CoinPrice.Enabled = ", rds.enableCoinPriceCfg)
+	log.Info("Redis.KeyPrefix = ", rds.keyPrefix)
+	return &rds, nil
 }
 
 func (s *redisStorageImpl) addKeyPrefix(key string) string {

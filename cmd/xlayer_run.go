@@ -156,6 +156,7 @@ func runAPI(ctx context.Context, c *config.XLayerConfig) error {
 		WithMainCoinsCache(localcache.GetDefaultCache()).
 		WithMessagePushProducer(messagePushProducer).
 		SetupL2Clients(l2NodeClients, l2Auths, networkIDs)
+	bridgeService.LogConfig()
 
 	if err = server.RunServer(c.UpstreamCfg.BridgeServer, bridgeService); err != nil { // non-blocking
 		return err
@@ -282,6 +283,7 @@ func runTask(ctx context.Context, c *config.XLayerConfig) error {
 	}
 
 	bridgeService := server.NewBridgeService(c.UpstreamCfg.BridgeServer, c.UpstreamCfg.BridgeController.Height, networkIDs, apiStorage)
+	bridgeService.LogConfig()
 
 	chSynced := make(chan uint32)
 	var chsExitRootEvent []chan *etherman.GlobalExitRoot
