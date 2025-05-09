@@ -14,6 +14,7 @@ services:
       - 9090:9090
       - 9300:9091
     environment:
+      - XLAYER=true
       - ZKEVM_BRIDGE_DATABASE_USER=test_user
       - ZKEVM_BRIDGE_DATABASE_PASSWORD=test_password
       - ZKEVM_BRIDGE_DATABASE_NAME=test_db
@@ -28,7 +29,7 @@ services:
     command:
       - "/bin/sh"
       - "-c"
-      - "/app/zkevm-bridge runAll --cfg /app/config.toml"
+      - "/app/zkevm-bridge run --cfg /app/config.toml"
 
   xlayer-bridge-service-api:
     container_name: xlayer-bridge-service-api
@@ -150,6 +151,7 @@ services:
       - 9090:9090
       - 9300:9091
     environment:
+      - XLAYER=true
       - ZKEVM_BRIDGE_DATABASE_USER=test_user
       - ZKEVM_BRIDGE_DATABASE_PASSWORD=test_password
       - ZKEVM_BRIDGE_DATABASE_NAME=test_db
@@ -165,7 +167,7 @@ services:
     command:
       - "/bin/sh"
       - "-c"
-      - "/app/zkevm-bridge runAll --cfg /app/config.toml"
+      - "/app/zkevm-bridge run --cfg /app/config.toml"
 
   zkevm-bridge-db:
     extends:

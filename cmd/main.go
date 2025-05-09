@@ -37,6 +37,14 @@ func main() {
 			Usage:    "Network: mainnet, testnet, internaltestnet, local. By default it uses mainnet",
 			Required: false,
 		},
+		&cli.BoolFlag{
+			Name:     flagXLayer,
+			Aliases:  []string{"xl"},
+			Usage:    "Enable XLayer, only applies to running bridge as single service.",
+			Required: false,
+			Value:    false,
+			EnvVars:  []string{"XLAYER"},
+		},
 	}
 
 	app.Commands = []*cli.Command{
@@ -50,15 +58,12 @@ func main() {
 			Name:    "run",
 			Aliases: []string{},
 			Usage:   "Run the zkevm bridge",
-			Action:  start,
-			Flags:   flags,
-		},
-		{
-			Name:    "runAll",
-			Aliases: []string{},
-			Usage:   "Run the xlayer bridge as a single binary.",
 			Action: func(ctx *cli.Context) error {
-				return run(ctx, "all")
+				if ctx.Bool(flagXLayer) {
+					return run(ctx, "all")
+				} else {
+					return start(ctx)
+				}
 			},
 			Flags: flags,
 		},
