@@ -1,4 +1,11 @@
 include version.mk
+include env.xlayer
+
+DC_BRIDGE := xlayer-bridge-service-e2e
+# Toggle to enable XLayer/upstream e2e tests to work.
+ifeq ($(XLAYER), false)
+	DC_BRIDGE=zkevm-bridge-service
+endif
 
 DOCKER_COMPOSE_XL := docker-compose -f docker-compose.xlayer.yml -f docker-compose.yml
 

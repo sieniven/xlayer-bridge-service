@@ -12,6 +12,7 @@ import (
 const (
 	flagCfg     = "cfg"
 	flagNetwork = "network"
+	flagXLayer  = "xlayer"
 )
 
 const (
@@ -36,6 +37,14 @@ func main() {
 			Usage:    "Network: mainnet, testnet, internaltestnet, local. By default it uses mainnet",
 			Required: false,
 		},
+		&cli.BoolFlag{
+			Name:     flagXLayer,
+			Aliases:  []string{"xl"},
+			Usage:    "If false, will run upstream code.",
+			Required: false,
+			Value:    true,
+			EnvVars:  []string{"XLAYER"},
+		},
 	}
 
 	app.Commands = []*cli.Command{
@@ -50,9 +59,13 @@ func main() {
 			Aliases: []string{},
 			Usage:   "Run the xlayer bridge as a single binary",
 			Action: func(ctx *cli.Context) error {
-				return run(ctx, "all")
+				if ctx.Bool(flagXLayer) {
+					return run(ctx, "all")
+				} else {
+					return start(ctx)
+				}
 			},
-			Flags:   flags,
+			Flags: flags,
 		},
 		{
 			Name:    "runAPI",
