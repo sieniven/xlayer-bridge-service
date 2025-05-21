@@ -51,10 +51,3 @@ SSH into a Linux machine, and run:
 make test-full # Default e2e test
 make test-edge # tests edge cases
 ```
-
-
-## Links to actual deployment
-
-[XLayer bridge testnet](https://www.okx.com/en-sg/xlayer/bridge-test)
-
-[XLayer bridge mainnet](https://www.okx.com/en-sg/xlayer/bridge)
