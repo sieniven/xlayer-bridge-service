@@ -24,6 +24,11 @@ AreClaimsBetweenL2sEnabled = false
     FrequencyToProcessCompressedClaims = "1m"
     GasOffset = 100000
 
+[Synchronizer]
+SyncInterval = "3s"
+SyncChunkSize = 100
+ForceL2SyncChunk = true
+
 [SyncDB]
 Database = "postgres"
 User = "test_user"

@@ -37,6 +37,11 @@ Host = "zkevm-bridge-db"
 Port = "5432"
 MaxConns = 20
 
+[Synchronizer]
+SyncInterval = "3s"
+SyncChunkSize = 100
+ForceL2SyncChunk = true
+
 [BridgeController]
 Store = "postgres"
 Height = 32
