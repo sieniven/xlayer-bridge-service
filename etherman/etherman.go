@@ -588,11 +588,7 @@ func (etherMan *Client) updateL1InfoTreeEvent(vLog types.Log, blocks *[]Block, b
 }
 
 func (etherMan *Client) processUpdateGlobalExitRootEvent(mainnetExitRoot, rollupExitRoot common.Hash, vLog types.Log, blocks *[]Block, blocksOrder *map[common.Hash][]Order) error {
-	// XLayer
-	fullBlock, err := etherMan.EtherClient.BlockByHash(context.Background(), vLog.BlockHash)
-	if err != nil {
-		return fmt.Errorf("error getting hashParent. BlockNumber: %d. Error: %v", vLog.BlockNumber, err)
-	}
+	fullBlockTime := etherMan.getFullBlockTime(vLog) // XLayer
 
 	var gExitRoot GlobalExitRoot
 	gExitRoot.ExitRoots = make([]common.Hash, 0)
@@ -600,12 +596,13 @@ func (etherMan *Client) processUpdateGlobalExitRootEvent(mainnetExitRoot, rollup
 	gExitRoot.ExitRoots = append(gExitRoot.ExitRoots, rollupExitRoot)
 	gExitRoot.GlobalExitRoot = hash(mainnetExitRoot, rollupExitRoot)
 	gExitRoot.BlockNumber = vLog.BlockNumber
-	gExitRoot.Time = time.Unix(int64(fullBlock.Time()), 0) // XLayer
+	gExitRoot.Time = fullBlockTime // XLayer
 
 	if len(*blocks) == 0 || ((*blocks)[len(*blocks)-1].BlockHash != vLog.BlockHash || (*blocks)[len(*blocks)-1].BlockNumber != vLog.BlockNumber) {
 		var block = Block{
 			BlockNumber: vLog.BlockNumber,
 			BlockHash:   vLog.BlockHash,
+			ReceivedAt:  fullBlockTime, // XLayer
 		}
 		block.GlobalExitRoots = append(block.GlobalExitRoots, gExitRoot)
 		*blocks = append(*blocks, block)
@@ -647,6 +644,7 @@ func (etherMan *Client) depositEvent(vLog types.Log, blocks *[]Block, blocksOrde
 		var block = Block{
 			BlockNumber: vLog.BlockNumber,
 			BlockHash:   vLog.BlockHash,
+			ReceivedAt:  etherMan.getFullBlockTime(vLog), // XLayer
 		}
 		block.Deposits = append(block.Deposits, deposit)
 		deposit.Time = block.ReceivedAt // XLayer
@@ -706,6 +704,7 @@ func (etherMan *Client) claimEvent(vLog types.Log, blocks *[]Block, blocksOrder 
 		var block = Block{
 			BlockNumber: vLog.BlockNumber,
 			BlockHash:   vLog.BlockHash,
+			ReceivedAt:  etherMan.getFullBlockTime(vLog), // XLayer
 		}
 		block.Claims = append(block.Claims, claim)
 		claim.Time = block.ReceivedAt // XLayer
@@ -741,6 +740,7 @@ func (etherMan *Client) tokenWrappedEvent(vLog types.Log, blocks *[]Block, block
 		var block = Block{
 			BlockNumber: vLog.BlockNumber,
 			BlockHash:   vLog.BlockHash,
+			ReceivedAt:  etherMan.getFullBlockTime(vLog), // XLayer
 		}
 		block.Tokens = append(block.Tokens, tokenWrapped)
 		*blocks = append(*blocks, block)
@@ -813,6 +813,7 @@ func (etherMan *Client) verifyBatches(vLog types.Log, blocks *[]Block, blocksOrd
 		var block = Block{
 			BlockNumber: vLog.BlockNumber,
 			BlockHash:   vLog.BlockHash,
+			ReceivedAt:  etherMan.getFullBlockTime(vLog), // XLayer
 		}
 		block.VerifiedBatches = append(block.VerifiedBatches, verifyBatch)
 		*blocks = append(*blocks, block)
