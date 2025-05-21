@@ -852,7 +852,7 @@ func (s *ClientSynchronizer) processDeposit(deposit etherman.Deposit, blockID ui
 	}
 	deposit.BlockID = blockID
 	deposit.NetworkID = s.networkID
-	depositID, err := s.storage.AddDeposit(s.ctx, &deposit, dbTx)
+	depositID, err := s.storage.AddDepositXLayer(s.ctx, &deposit, dbTx) // XLayer (adds dest contract addr)
 	if err != nil {
 		log.Errorf("networkID: %d, failed to store new deposit locally, BlockNumber: %d, Deposit: %+v err: %v", s.networkID, deposit.BlockNumber, deposit, err)
 		rollbackErr := s.storage.Rollback(s.ctx, dbTx)
