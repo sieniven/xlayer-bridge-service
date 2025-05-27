@@ -153,12 +153,15 @@ func (p *PostgresStorage) GetNotReadyTransactionsWithBlockRange(ctx context.Cont
 
 // GetL1Deposits get the L1 deposits remain to be ready_for_claim
 func (p *PostgresStorage) GetL1Deposits(ctx context.Context, exitRoot []byte, dbTx pgx.Tx) ([]*etherman.Deposit, error) {
-	log.Infow("GetL1Deposits", "exitRoot", exitRoot)
 	const getDepCntSql = `SELECT d.deposit_cnt FROM mt.root as r INNER JOIN sync.deposit as d ON d.id = r.deposit_id WHERE r.root = $1 AND r.network = 0`
 	rs, err := p.getExecQuerier(dbTx).Query(ctx, getDepCntSql, exitRoot)
 	if err != nil {
 		return nil, err
 	}
+
+	result, err := rs.Values()
+	log.Infow("GetL1Deposits", "result", result, "exitRoot", exitRoot, "err", err)
+
 	for rs.Next() {
 		var deposit etherman.Deposit
 		err = rs.Scan(&deposit.DepositCount)
