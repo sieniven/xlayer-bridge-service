@@ -42,7 +42,7 @@ func (h *MessageHandler) ConsumeClaim(session sarama.ConsumerGroupSession, claim
 				log.Info("message channel was closed")
 				return nil
 			}
-			log.Infof("message received topic[%v] partition[%v] offset[%v]", message.Topic, message.Partition, message.Offset)
+			// log.Infof("message received topic[%v] partition[%v] offset[%v]", message.Topic, message.Partition, message.Offset)
 
 			// Retry for 5 times, if still fails, ignore this message
 			for i := 0; i < maxRetries; i++ {
