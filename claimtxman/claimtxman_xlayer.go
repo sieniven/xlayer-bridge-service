@@ -150,7 +150,7 @@ func (tm *ClaimTxManager) processDepositStatusL2(ger *etherman.GlobalExitRoot) e
 }
 
 func (tm *ClaimTxManager) getDeposits(ger *etherman.GlobalExitRoot) ([]*etherman.Deposit, error) {
-	log.Infof("Mainnet exitroot %v is updated", ger.ExitRoots[0])
+	log.Infof("2) Mainnet exitroot %v is updated", ger.ExitRoots[0])
 	deposits, err := tm.storage.GetL1Deposits(tm.ctx, ger.ExitRoots[0][:], nil)
 	if err != nil {
 		log.Errorf("error processing ger. Error: %v", err)
@@ -299,7 +299,7 @@ func (tm *ClaimTxManager) processDepositStatusXLayer(ger *etherman.GlobalExitRoo
 			metrics.RecordOrderWaitTime(uint32(deposit.NetworkID), uint32(deposit.DestinationNetwork), time.Since(deposit.Time))
 		}
 	} else { // L1 exit root is updated in the trusted state
-		log.Infof("Mainnet exitroot %v is updated", ger.ExitRoots[0])
+		log.Infof("1) Mainnet exitroot %v is updated", ger.ExitRoots[0])
 		deposits, err := tm.storage.UpdateL1DepositsStatusXLayer(tm.ctx, ger.ExitRoots[0][:], dbTx)
 		if err != nil {
 			log.Errorf("error getting and updating L1DepositsStatus. Error: %v", err)

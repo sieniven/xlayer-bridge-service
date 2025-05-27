@@ -153,6 +153,7 @@ func (p *PostgresStorage) GetNotReadyTransactionsWithBlockRange(ctx context.Cont
 
 // GetL1Deposits get the L1 deposits remain to be ready_for_claim
 func (p *PostgresStorage) GetL1Deposits(ctx context.Context, exitRoot []byte, dbTx pgx.Tx) ([]*etherman.Deposit, error) {
+	log.Infow("GetL1Deposits", "exitRoot", exitRoot)
 	const getDepCntSql = `SELECT d.deposit_cnt FROM mt.root as r INNER JOIN sync.deposit as d ON d.id = r.deposit_id WHERE r.root = $1 AND r.network = 0`
 	rs, err := p.getExecQuerier(dbTx).Query(ctx, getDepCntSql, exitRoot)
 	if err != nil {
@@ -160,9 +161,8 @@ func (p *PostgresStorage) GetL1Deposits(ctx context.Context, exitRoot []byte, db
 	}
 	for rs.Next() {
 		var deposit etherman.Deposit
-		if err = rs.Scan(&deposit.DepositCount); err == nil {
-			log.Infow("GetL1Deposits", "deposit_cnt", deposit.DepositCount)
-		}
+		err = rs.Scan(&deposit.DepositCount)
+		log.Infow("GetL1Deposits", "deposit_cnt", deposit.DepositCount, "err", err)
 	}
 
 	const updateDepositsStatusSQL = `Select d.id, leaf_type, orig_net, orig_addr, amount, dest_net, dest_addr, deposit_cnt, block_id, b.block_num, d.network_id, tx_hash, metadata, ready_for_claim, b.received_at, dest_contract_addr
@@ -345,8 +345,7 @@ func (p *PostgresStorage) GetLatestReadyDeposits(ctx context.Context, networkID 
 func (p *PostgresStorage) UpdateL1DepositsStatusXLayer(ctx context.Context, exitRoot []byte, dbTx pgx.Tx) ([]*etherman.Deposit, error) {
 	log.Infow("Update L1 Deposit Status XLayer", "root", exitRoot)
 
-	const debugSql = `SELECT d.deposit_cnt FROM mt.root as r INNER JOIN sync.deposit as d ON d.id = r.deposit_id WHERE r.root = $1 AND r.network = 0) 
-			AND network_id = 0 AND ready_for_claim = false`
+	const debugSql = `SELECT d.deposit_cnt FROM mt.root as r INNER JOIN sync.deposit as d ON d.id = r.deposit_id WHERE r.root = $1 AND r.network = 0`
 	rs, err := p.getExecQuerier(dbTx).Query(ctx, debugSql, exitRoot)
 	for rs.Next() {
 		var deposit etherman.Deposit
