@@ -237,6 +237,7 @@ func (s *ClientSynchronizer) syncTrustedState() error {
 		return err
 	}
 	if isUpdated {
+		log.Warnw("WRITING GLOBAL EXIT ROOT", "networkID", s.networkID, "ger", ger, "blockNumber", ger.BlockNumber)
 		s.chExitRootEvent <- ger
 	}
 	return nil
@@ -538,6 +539,7 @@ func (s *ClientSynchronizer) checkReorg(latestBlock *etherman.Block) (*etherman.
 				return nil, err
 			}
 			latestBlock, err = s.storage.GetPreviousBlock(s.ctx, s.networkID, depth, dbTx)
+			log.Warnw("PREVIOUS BLOCK", "block", latestBlock.BlockNumber, "hash", latestBlock.BlockHash)
 			errC := s.storage.Commit(s.ctx, dbTx)
 			if errC != nil {
 				log.Errorf("networkID: %d, error committing dbTx, err: %v", s.networkID, errC)
@@ -561,7 +563,15 @@ func (s *ClientSynchronizer) checkReorg(latestBlock *etherman.Block) (*etherman.
 		}
 	}
 	if latestBlockSynced.BlockHash != latestBlock.BlockHash {
-		log.Infof("NetworkID: %d, reorg detected in block: %d", s.networkID, latestBlockSynced.BlockNumber)
+		// log.Infof("NetworkID: %d, reorg detected in block: %d", s.networkID, latestBlockSynced.BlockNumber)
+		log.Infow(
+			"Reorg detected in block",
+			"networkID", s.networkID,
+			"latestBlockSynced number", latestBlockSynced.BlockNumber,
+			"latestBlock number", latestBlock.BlockNumber,
+			"latestBlockSynced hash", latestBlockSynced.BlockHash,
+			"latestBlock hash", latestBlock.BlockHash,
+		)
 		return latestBlock, nil
 	}
 	log.Debugf("NetworkID: %d, no reorg detected", s.networkID)

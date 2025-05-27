@@ -159,7 +159,8 @@ func (p *PostgresStorage) GetL1Deposits(ctx context.Context, exitRoot []byte, db
 	if err != nil {
 		return nil, err
 	}
-	log.Infow("GetL1Deposits", "exitRoot", hex.EncodeToString(exitRoot), "err", err)
+	// NOTE: sometimes query on the same root returns empty rows (due to changing block id?)
+	log.Infow("GetL1Deposits", "exitRoot", hex.EncodeToString(exitRoot), "cnt", len(rs.RawValues()), "err", err)
 
 	for rs.Next() {
 		var deposit etherman.Deposit
@@ -190,6 +191,8 @@ func (p *PostgresStorage) GetL1Deposits(ctx context.Context, exitRoot []byte, db
 		deposit.Amount, _ = new(big.Int).SetString(amount, 10) //nolint:gomnd
 		deposits = append(deposits, &deposit)
 	}
+
+	log.Infow("NUMBER OF L1 DEPOSITS", "cnt", len(deposits))
 	return deposits, nil
 }
 
