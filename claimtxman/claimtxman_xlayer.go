@@ -165,7 +165,7 @@ func (tm *ClaimTxManager) processDepositStatusL1(newGer *etherman.GlobalExitRoot
 		return err
 	}
 
-	log.Debug("createClaimTx deposits-num:", len(deposits))
+	log.Debug("createClaimTx deposits-num:", len(deposits)) // NOTE: 0 deposits are retrieved from storage
 	for _, deposit := range deposits {
 		dbTx, err := tm.storage.BeginDBTransaction(tm.ctx)
 		if err != nil {

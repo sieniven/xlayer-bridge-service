@@ -378,7 +378,8 @@ func (s *ClientSynchronizer) processBlockRange(blocks []etherman.Block, order ma
 					return err
 				}
 			case etherman.DepositsOrder:
-				log.Infof("NetworkID: %d. block %d DepositsOrder", s.networkID, blocks[i].BlockNumber)
+				// log.Infof("NetworkID: %d. block %d DepositsOrder", s.networkID, blocks[i].BlockNumber)
+				log.Infow("DepositsOrder", "networkID", s.networkID, "block", blocks[i].BlockNumber, "deposit", blocks[i].Deposits[element.Pos])
 				err = s.processDeposit(blocks[i].Deposits[element.Pos], blockID, dbTx)
 				if err != nil {
 					return err

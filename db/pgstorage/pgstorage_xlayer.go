@@ -153,6 +153,18 @@ func (p *PostgresStorage) GetNotReadyTransactionsWithBlockRange(ctx context.Cont
 
 // GetL1Deposits get the L1 deposits remain to be ready_for_claim
 func (p *PostgresStorage) GetL1Deposits(ctx context.Context, exitRoot []byte, dbTx pgx.Tx) ([]*etherman.Deposit, error) {
+	const getDepCntSql = `SELECT d.deposit_cnt FROM mt.root as r INNER JOIN sync.deposit as d ON d.id = r.deposit_id WHERE r.root = $1 AND r.network = 0`
+	rs, err := p.getExecQuerier(dbTx).Query(ctx, getDepCntSql, exitRoot)
+	if err != nil {
+		return nil, err
+	}
+	for rs.Next() {
+		var deposit etherman.Deposit
+		if err = rs.Scan(&deposit.DepositCount); err == nil {
+			log.Infow("GetL1Deposits", "deposit_cnt", deposit.DepositCount)
+		}
+	}
+
 	const updateDepositsStatusSQL = `Select d.id, leaf_type, orig_net, orig_addr, amount, dest_net, dest_addr, deposit_cnt, block_id, b.block_num, d.network_id, tx_hash, metadata, ready_for_claim, b.received_at, dest_contract_addr
 			FROM sync.deposit as d INNER JOIN sync.block as b ON d.network_id = b.network_id AND d.block_id = b.id
 			WHERE deposit_cnt <= (SELECT d.deposit_cnt FROM mt.root as r INNER JOIN sync.deposit as d ON d.id = r.deposit_id WHERE r.root = $1 AND r.network = 0) 
@@ -331,6 +343,18 @@ func (p *PostgresStorage) GetLatestReadyDeposits(ctx context.Context, networkID 
 
 // UpdateL1DepositsStatusXLayer updates the ready_for_claim status of L1 deposits.
 func (p *PostgresStorage) UpdateL1DepositsStatusXLayer(ctx context.Context, exitRoot []byte, dbTx pgx.Tx) ([]*etherman.Deposit, error) {
+	log.Infow("Update L1 Deposit Status XLayer", "root", exitRoot)
+
+	const debugSql = `SELECT d.deposit_cnt FROM mt.root as r INNER JOIN sync.deposit as d ON d.id = r.deposit_id WHERE r.root = $1 AND r.network = 0) 
+			AND network_id = 0 AND ready_for_claim = false`
+	rs, err := p.getExecQuerier(dbTx).Query(ctx, debugSql, exitRoot)
+	for rs.Next() {
+		var deposit etherman.Deposit
+		if err = rs.Scan(&deposit.DepositCount); err == nil {
+			log.Infow("UpdateL1DepositsStatusXLayer (update all rows below cnt)", "deposit_cnt", deposit.DepositCount)
+		}
+	}
+
 	const updateDepositsStatusSQL = `WITH d AS (UPDATE sync.deposit SET ready_for_claim = true, ready_time = $1 
 		WHERE deposit_cnt <=
 			(SELECT d.deposit_cnt FROM mt.root as r INNER JOIN sync.deposit as d ON d.id = r.deposit_id WHERE r.root = $2 AND r.network = 0) 
