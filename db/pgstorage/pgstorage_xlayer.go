@@ -2,6 +2,7 @@ package pgstorage
 
 import (
 	"context"
+	"encoding/hex"
 	"math/big"
 	"time"
 
@@ -158,9 +159,7 @@ func (p *PostgresStorage) GetL1Deposits(ctx context.Context, exitRoot []byte, db
 	if err != nil {
 		return nil, err
 	}
-
-	result, err := rs.Values()
-	log.Infow("GetL1Deposits", "result", result, "exitRoot", exitRoot, "err", err)
+	log.Infow("GetL1Deposits", "exitRoot", hex.EncodeToString(exitRoot), "err", err)
 
 	for rs.Next() {
 		var deposit etherman.Deposit
