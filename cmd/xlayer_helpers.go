@@ -57,6 +57,7 @@ func setupConfigAndLog(ctx *cli.Context) (*config.XLayerConfig, error) {
 		if err = apolloconfig.Init(c.Apollo); err != nil {
 			return nil, err
 		}
+		log.Infow("Finished loading apollo.", "upstreamCfg", c.UpstreamCfg)
 		if err = apolloconfig.Load(&c.UpstreamCfg); err != nil {
 			return nil, err
 		}
