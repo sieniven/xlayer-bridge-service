@@ -40,8 +40,10 @@ func run(ctx *cli.Context, choice string) error {
 
 	c, err := setupConfigAndLog(ctx)
 	if err != nil {
+		log.Warnw("Error reading config", "err", err)
 		return err
 	}
+	log.Infow("Finished reading config", "config", c)
 
 	go enableMetrics(c)
 
