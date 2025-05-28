@@ -26,7 +26,6 @@ require (
 	github.com/lib/pq v1.10.9
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nacos-group/nacos-sdk-go v1.1.4
-	github.com/okx/mock_kms v1.0.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.18.0
 	github.com/prometheus/client_model v0.5.0
@@ -36,6 +35,7 @@ require (
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.10.0
 	github.com/urfave/cli/v2 v2.27.6
+	gitlab.okg.com/okcoin-commons/ok-kms-go-client v1.0.1
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.33.0
 	golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa
