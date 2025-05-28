@@ -4,6 +4,7 @@ import (
 	"math/big"
 
 	"github.com/0xPolygonHermez/zkevm-bridge-service/etherman"
+	"github.com/0xPolygonHermez/zkevm-bridge-service/log"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/utils"
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -111,6 +112,7 @@ func ReplaceDepositDestAddresses(deposit *etherman.Deposit) {
 		return
 	}
 	processor := getProcessor(deposit.OriginalAddress, deposit.DestContractAddress)
+	log.Infow("REPLACE DEPOSIT ADDR", "processor", processor, "origAddr", deposit.OriginalAddress, "DestContractAddress", deposit.DestContractAddress)
 	if processor == nil {
 		// Cannot find any valid processor
 		return

@@ -222,6 +222,8 @@ func runTask(ctx context.Context, c *config.XLayerConfig) error {
 	// Use this to run Go routines
 	errs, _ := errgroup.WithContext(ctx)
 
+	log.Infow("RUN TASK", "BusinessConfig", c.BusinessConfig)
+
 	messagebridge.InitUSDCLxLyProcessor(c.BusinessConfig.USDCContractAddresses, c.BusinessConfig.USDCTokenAddresses)
 	messagebridge.InitWstETHProcessor(c.BusinessConfig.WstETHContractAddresses, c.BusinessConfig.WstETHTokenAddresses)
 	messagebridge.InitEURCProcessor(c.BusinessConfig.EURCContractAddresses, c.BusinessConfig.EURCTokenAddresses)
