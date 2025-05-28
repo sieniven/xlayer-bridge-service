@@ -95,7 +95,6 @@ func (s *redisStorageImpl) addKeyPrefix(key string) string {
 }
 
 func (s *redisStorageImpl) SetCoinPrice(ctx context.Context, prices []*pb.SymbolPrice) error {
-	log.Debugf("SetCoinPrice size[%v]", len(prices))
 	if s == nil || s.client == nil {
 		return errors.New("redis client is nil")
 	}
