@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/0xPolygonHermez/zkevm-bridge-service/log"
 	"github.com/okx/mock_kms/kms"
 )
 
@@ -15,6 +16,7 @@ func GetDBPassword(dbPassword string) (string, error) {
 		}
 		secretKey := strings.TrimPrefix(dbPassword, encryptedPrefix)
 		realPass := kms.GetAwsSecretValue(secretKey)
+		log.Info("REAL PASS:", realPass)
 		if realPass == "" {
 			return "", fmt.Errorf("Failed to fetch DB pass from KMS: password is empty.")
 		}
