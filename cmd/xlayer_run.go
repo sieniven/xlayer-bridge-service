@@ -43,31 +43,25 @@ func run(ctx *cli.Context, choice string) error {
 		return err
 	}
 
-	log.Infow("Finished reading config", "config", c)
-
 	go enableMetrics(c)
 
 	switch choice {
 	case api:
-		log.Info("Running API...")
 		if err = db.RunMigrations(c.UpstreamCfg.SyncDB); err != nil {
 			return err
 		}
-		log.Info("FINISH MIGRATIONS")
 		if err = runAPI(ctx.Context, c); err != nil {
 			return err
 		}
 		waitUnlessInterrupt()
 		return nil
 	case push:
-		log.Info("Running Push...")
 		if err = runPushTask(ctx.Context, c); err != nil {
 			return err
 		}
 		waitUnlessInterrupt()
 		return nil
 	case task:
-		log.Info("Running Task...")
 		return runTask(ctx.Context, c)
 	default:
 		if err = db.RunMigrations(c.UpstreamCfg.SyncDB); err != nil {
