@@ -51,12 +51,14 @@ func run(ctx *cli.Context, choice string) error {
 			return err
 		}
 		if err = runAPI(ctx.Context, c); err != nil {
-			return nil
+			return err
 		}
 		waitUnlessInterrupt()
 		return nil
 	case push:
-		err = runPushTask(ctx.Context, c)
+		if err = runPushTask(ctx.Context, c); err != nil {
+			return err
+		}
 		waitUnlessInterrupt()
 		return nil
 	case task:
@@ -65,7 +67,6 @@ func run(ctx *cli.Context, choice string) error {
 		if err = db.RunMigrations(c.UpstreamCfg.SyncDB); err != nil {
 			return err
 		}
-		// Runs all services as one
 		if err = runAPI(ctx.Context, c); err != nil {
 			return err
 		}
@@ -158,11 +159,7 @@ func runAPI(ctx context.Context, c *config.XLayerConfig) error {
 		SetupL2Clients(l2NodeClients, l2Auths, networkIDs)
 	bridgeService.LogConfig()
 
-	if err = server.RunServer(c.UpstreamCfg.BridgeServer, bridgeService); err != nil { // non-blocking
-		return err
-	}
-
-	return err
+	return server.RunServer(c.UpstreamCfg.BridgeServer, bridgeService) // non-blocking
 }
 
 func runPushTask(ctx context.Context, c *config.XLayerConfig) error {
