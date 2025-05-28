@@ -42,7 +42,7 @@ func main() {
 			Aliases:  []string{"xl"},
 			Usage:    "Enable XLayer, only applies to running bridge as single service.",
 			Required: false,
-			Value:    false,
+			Value:    true,
 			EnvVars:  []string{"XLAYER"},
 		},
 	}
