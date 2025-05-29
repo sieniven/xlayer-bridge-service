@@ -55,4 +55,6 @@ func TestXLayerConfig(t *testing.T) {
 	assert.Equal(t, true, cfg.ClaimTxManager.FreeGas)
 	assert.True(t, viper.IsSet("ClaimTxManager.OptClaim"))
 	assert.Equal(t, true, cfg.ClaimTxManager.OptClaim)
+	assert.True(t, viper.IsSet("MessagePushProducer.BizCode"))
+	assert.Equal(t, "hello", cfg.MessagePushProducer.BizCode)
 }

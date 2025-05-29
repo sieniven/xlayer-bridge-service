@@ -127,6 +127,7 @@ PushKey = "huh"
 Username = "bruh"
 Password = "password"
 RootCAPath = "ca path"
+BizCode = "hello"
 
 [IPRestriction]
 Enabled = false
