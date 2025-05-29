@@ -51,4 +51,8 @@ func TestXLayerConfig(t *testing.T) {
 	assert.Equal(t, uint64(99), cfg.L1TargetBlockConfirmations)
 	assert.True(t, viper.IsSet("ClaimTxManager.MonitorTxsLimit"))
 	assert.Equal(t, uint(1234), cfg.ClaimTxManager.MonitorTxsLimit)
+	assert.True(t, viper.IsSet("ClaimTxManager.FreeGas"))
+	assert.Equal(t, true, cfg.ClaimTxManager.FreeGas)
+	assert.True(t, viper.IsSet("ClaimTxManager.OptClaim"))
+	assert.Equal(t, true, cfg.ClaimTxManager.OptClaim)
 }
