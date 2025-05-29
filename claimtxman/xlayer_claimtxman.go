@@ -22,7 +22,6 @@ import (
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/redisstorage"
 
 	ctmtypes "github.com/0xPolygonHermez/zkevm-bridge-service/claimtxman/types"
-	apolloconfig "github.com/0xPolygonHermez/zkevm-bridge-service/config/apollo_xlayer"
 )
 
 var (
@@ -37,7 +36,7 @@ var (
 	// Producer to push the transaction status change to front end
 	messagePushProducer messagepush.KafkaProducer
 	redisStorage        redisstorage.RedisStorage
-	monitorTxsLimit     apolloconfig.Entry[uint] = apolloconfig.NewIntEntry("claimtxman.monitorTxsLimit", uint(128))
+	monitorTxsLimit     uint = 128
 
 	// NOTE: originated from zkevm-node package (which is now removed)
 	// ErrNonceTooLow is returned if the nonce of a transaction is lower than the
@@ -65,6 +64,11 @@ func (tm *ClaimTxManager) SetFreegas(isFree bool) *ClaimTxManager {
 
 func (tm *ClaimTxManager) SetOptClaim(flag bool) *ClaimTxManager {
 	optClaim = flag
+	return tm
+}
+
+func (tm *ClaimTxManager) SetMonitorTxsLimit(limit uint) *ClaimTxManager {
+	monitorTxsLimit = limit
 	return tm
 }
 
@@ -150,7 +154,7 @@ func (tm *ClaimTxManager) monitorTxsXLayer(ctx context.Context) error {
 	mLog.Infof("monitorTxs begin")
 
 	statusesFilter := []ctmtypes.MonitoredTxStatus{ctmtypes.MonitoredTxStatusCreated}
-	mTxs, err := tm.storage.GetClaimTxsByStatusWithLimit(ctx, statusesFilter, monitorTxsLimit.Get(), 0, dbTx)
+	mTxs, err := tm.storage.GetClaimTxsByStatusWithLimit(ctx, statusesFilter, monitorTxsLimit, 0, dbTx)
 	if err != nil {
 		mLog.Errorf("failed to get created monitored txs: %v", err)
 		rollbackErr := tm.storage.Rollback(tm.ctx, dbTx)

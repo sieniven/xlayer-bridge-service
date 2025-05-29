@@ -23,7 +23,6 @@ import (
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/utils/messagebridge"
 
 	ctmtypes "github.com/0xPolygonHermez/zkevm-bridge-service/claimtxman/types"
-	apolloconfig "github.com/0xPolygonHermez/zkevm-bridge-service/config/apollo_xlayer"
 	xlUtils "github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/utils"
 )
 
@@ -32,8 +31,8 @@ const (
 	defaultMinDuration = 1
 )
 
-var (
-	minReadyTimeLimitForWaitClaimSeconds = apolloconfig.NewIntEntry[int64]("api.minReadyTimeLimitForWaitClaim", 24*60*1000) //nolint:gomnd
+const (
+	minReadyTimeLimitForWaitClaimSeconds int64 = 24 * 60 * 1000
 )
 
 // Put in global variables (separate from struct fields)
@@ -216,7 +215,7 @@ func (s *bridgeService) GetPendingTransactions(ctx context.Context, req *pb.GetP
 			// For L1->L2, when ready_for_claim is false, but there have been more than 64 block confirmations,
 			// should also display the status as "L2 executing" (pending auto claim)
 			if deposit.NetworkID == 0 {
-				if l1BlockNum-deposit.BlockNumber >= xlUtils.L1TargetBlockConfirmations.Get() {
+				if l1BlockNum-deposit.BlockNumber >= xlUtils.L1TargetBlockConfirmations {
 					transaction.Status = uint32(pb.TransactionStatus_TX_PENDING_AUTO_CLAIM)
 				}
 			} else {
@@ -313,7 +312,7 @@ func (s *bridgeService) GetAllTransactions(ctx context.Context, req *pb.GetAllTr
 			// For L1->L2, when ready_for_claim is false, but there have been more than 64 block confirmations,
 			// should also display the status as "L2 executing" (pending auto claim)
 			if deposit.NetworkID == 0 {
-				if l1BlockNum-deposit.BlockNumber >= xlUtils.L1TargetBlockConfirmations.Get() {
+				if l1BlockNum-deposit.BlockNumber >= xlUtils.L1TargetBlockConfirmations {
 					transaction.Status = uint32(pb.TransactionStatus_TX_PENDING_AUTO_CLAIM)
 				}
 			} else {
@@ -530,7 +529,7 @@ func (s *bridgeService) GetReadyPendingTransactions(ctx context.Context, req *pb
 		limit = s.maxPageLimit
 	}
 
-	minReadyTime := time.Now().Add(time.Duration(-minReadyTimeLimitForWaitClaimSeconds.Get()) * time.Second)
+	minReadyTime := time.Now().Add(time.Duration(-minReadyTimeLimitForWaitClaimSeconds) * time.Second)
 
 	deposits, err := s.storage.GetReadyPendingTransactions(ctx, uint(req.NetworkId), uint(limit+1), uint(req.Offset), minReadyTime, nil)
 	if err != nil {

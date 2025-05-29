@@ -15,7 +15,6 @@ import (
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/nacos"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/tokenlogoinfo"
 
-	apolloconfig "github.com/0xPolygonHermez/zkevm-bridge-service/config/apollo_xlayer"
 	kmsDB "github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/kms"
 	xlayerUtils "github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/utils"
 )
@@ -47,20 +46,12 @@ func setupConfigAndLog(ctx *cli.Context) (*config.XLayerConfig, error) {
 
 	// NOTE: Load XLayer config over the upstream configuration.
 	c, err := config.LoadXLayerCfg(cfg)
+
 	setupLog(c.UpstreamCfg.Log)
 	xlayerUtils.InnitOkInnerChainIdMapper(c.BusinessConfig)
+	xlayerUtils.InitL1TargetBlockConfirmations(c.L1TargetBlockConfirmations)
 	iprestriction.InitClient(c.IPRestriction)
 	tokenlogoinfo.InitClient(c.TokenLogoServiceConfig)
-
-	if c.Apollo.Enabled {
-		apolloconfig.SetLogger()
-		if err = apolloconfig.Init(c.Apollo); err != nil {
-			return nil, err
-		}
-		if err = apolloconfig.Load(c.UpstreamCfg); err != nil {
-			return nil, err
-		}
-	}
 
 	return c, err
 }

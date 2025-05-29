@@ -17,6 +17,7 @@ import (
 	"github.com/0xPolygonHermez/zkevm-bridge-service/synchronizer"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/utils"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/utils/gerror"
+
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/coinmiddleware"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/estimatetime"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/localcache"
@@ -94,7 +95,7 @@ func runAPI(ctx context.Context, c *config.XLayerConfig) error {
 		return err
 	}
 
-	if err = estimatetime.InitDefaultCalculator(apiStorage); err != nil {
+	if err = estimatetime.InitDefaultCalculator(apiStorage, c.EstimateTime); err != nil {
 		return err
 	}
 
@@ -145,13 +146,8 @@ func runAPI(ctx context.Context, c *config.XLayerConfig) error {
 
 	registerNacos(c.NacosConfig)
 
-	if c.Apollo.Enabled {
-		err = sentinel.InitApolloDataSource(c.Apollo)
-	} else {
-		err = sentinel.InitFileDataSource(c.BridgeServer.SentinelConfigFilePath)
-	}
-	if err != nil {
-		log.Infof("init sentinel error[%v]; ignored and proceed with no sentinel config", err)
+	if err := sentinel.InitFileDataSource(c.BridgeServer.SentinelConfigFilePath); err != nil {
+		return err
 	}
 
 	bridgeService := server.NewBridgeService(c.UpstreamCfg.BridgeServer, c.UpstreamCfg.BridgeController.Height, networkIDs, apiStorage).
@@ -224,8 +220,6 @@ func runTask(ctx context.Context, c *config.XLayerConfig) error {
 	// Use this to run Go routines
 	errs, _ := errgroup.WithContext(ctx)
 
-	log.Infow("RUN TASK", "BusinessConfig", c.BusinessConfig)
-
 	messagebridge.InitUSDCLxLyProcessor(c.BusinessConfig.USDCContractAddresses, c.BusinessConfig.USDCTokenAddresses)
 	messagebridge.InitWstETHProcessor(c.BusinessConfig.WstETHContractAddresses, c.BusinessConfig.WstETHTokenAddresses)
 	messagebridge.InitEURCProcessor(c.BusinessConfig.EURCContractAddresses, c.BusinessConfig.EURCTokenAddresses)
@@ -236,7 +230,7 @@ func runTask(ctx context.Context, c *config.XLayerConfig) error {
 		return err
 	}
 
-	if err = estimatetime.InitDefaultCalculator(apiStorage); err != nil {
+	if err = estimatetime.InitDefaultCalculator(apiStorage, c.EstimateTime); err != nil {
 		return err
 	}
 
@@ -315,7 +309,8 @@ func runTask(ctx context.Context, c *config.XLayerConfig) error {
 		cliSyncL2 = cliSyncL2.
 			SetProducer(messagePushProducer).
 			SetRedis(redisStorage).
-			SetRollupID(uint(rollupID))
+			SetRollupID(uint(rollupID)).
+			SetLargeTxUsdLimit(c.Synchronizer.LargeTxUsdLimit)
 		errs.Go(cliSyncL2.Sync)
 
 		if c.UpstreamCfg.ClaimTxManager.Enabled {
@@ -361,7 +356,8 @@ func runTask(ctx context.Context, c *config.XLayerConfig) error {
 		cliSyncL1 = cliSyncL1.
 			SetProducer(messagePushProducer).
 			SetRedis(redisStorage).
-			SetRollupID(uint(networkID))
+			SetRollupID(uint(networkID)).
+			SetLargeTxUsdLimit(c.Synchronizer.LargeTxUsdLimit)
 	}
 	errs.Go(cliSyncL1.Sync)
 
