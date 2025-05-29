@@ -43,6 +43,8 @@ func run(ctx *cli.Context, choice string) error {
 		return err
 	}
 
+	log.Infow("LOG FULL CONFIG", "cfg", c)
+
 	go enableMetrics(c)
 
 	switch choice {
