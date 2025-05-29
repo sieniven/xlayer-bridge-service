@@ -63,4 +63,7 @@ func TestXLayerConfig(t *testing.T) {
 	assert.True(t, viper.IsSet("EstimateTime.DefaultTime"))
 	assert.Equal(t, []uint32{78, 12}, cfg.EstimateTime.DefaultTime)
 
+	assert.True(t, viper.IsSet("BridgeServer.Redis.EnablePrice"))
+	assert.Equal(t, true, cfg.BridgeServer.Redis.EnablePrice)
+
 }

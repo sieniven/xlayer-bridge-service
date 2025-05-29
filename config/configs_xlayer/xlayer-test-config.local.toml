@@ -74,6 +74,7 @@ SentinelConfigFilePath = "/app/sentinel_config.json" # XLayer
     Password = ""
     DB = 0
     MockPrice = true
+    EnablePrice = true
 
 [NetworkConfig]
 GenBlockNumber = 0
