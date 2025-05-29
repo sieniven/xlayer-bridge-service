@@ -57,4 +57,10 @@ func TestXLayerConfig(t *testing.T) {
 	assert.Equal(t, true, cfg.ClaimTxManager.OptClaim)
 	assert.True(t, viper.IsSet("MessagePushProducer.BizCode"))
 	assert.Equal(t, "hello", cfg.MessagePushProducer.BizCode)
+
+	assert.True(t, viper.IsSet("EstimateTime.SampleLimit"))
+	assert.Equal(t, uint32(16), cfg.EstimateTime.SampleLimit)
+	assert.True(t, viper.IsSet("EstimateTime.DefaultTime"))
+	assert.Equal(t, []uint32{78, 12}, cfg.EstimateTime.DefaultTime)
+
 }

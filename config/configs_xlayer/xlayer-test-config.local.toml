@@ -140,3 +140,7 @@ Enabled = false
 Scheme = "http"
 LogoServiceNacosName = "testing 123"
 Timeout = "3s"
+
+[EstimateTime]
+SampleLimit = 16
+DefaultTime = [78, 12]
