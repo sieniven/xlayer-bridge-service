@@ -96,12 +96,6 @@ func runAPI(ctx context.Context, c *config.XLayerConfig) error {
 		return err
 	}
 
-	messagePushProducer, closeKafka, err := setupKafkaProducer(c.MessagePushProducer)
-	if err != nil {
-		return err
-	}
-	defer closeKafka()
-
 	l1ChainId := c.Etherman.L1ChainId
 	l2ChainIds := c.Etherman.L2ChainIds
 	var chainIDs = []uint{l1ChainId}
@@ -142,7 +136,6 @@ func runAPI(ctx context.Context, c *config.XLayerConfig) error {
 	bridgeService := server.NewBridgeService(c.UpstreamCfg.BridgeServer, c.UpstreamCfg.BridgeController.Height, networkIDs, apiStorage).
 		WithRedisStorage(redisStorage).
 		WithMainCoinsCache(localcache.GetDefaultCache()).
-		WithMessagePushProducer(messagePushProducer).
 		WithL2Clients(l2NodeClients, l2Auths, networkIDs)
 	bridgeService.LogConfig()
 
@@ -160,11 +153,10 @@ func runPushTask(ctx context.Context, c *config.XLayerConfig) error {
 		return err
 	}
 
-	messagePushProducer, closeKafka, err := setupKafkaProducer(c.MessagePushProducer)
+	messagePushProducer, _, err := setupKafkaProducer(c.MessagePushProducer)
 	if err != nil {
 		return err
 	}
-	defer closeKafka()
 
 	l1Etherman, err := etherman.NewClient(c.UpstreamCfg.Etherman,
 		c.UpstreamCfg.NetworkConfig.PolygonBridgeAddress,
