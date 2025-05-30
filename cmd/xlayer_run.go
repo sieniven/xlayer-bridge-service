@@ -103,12 +103,7 @@ func runAPI(ctx context.Context, c *config.XLayerConfig) error {
 		if err != nil {
 			return err
 		}
-		defer func() {
-			err := messagePushProducer.Close()
-			if err != nil {
-				log.Errorf("close kafka producer error: %v", err)
-			}
-		}()
+		defer messagePushProducer.Close()
 	}
 
 	l1ChainId := c.Etherman.L1ChainId
@@ -152,7 +147,7 @@ func runAPI(ctx context.Context, c *config.XLayerConfig) error {
 		WithRedisStorage(redisStorage).
 		WithMainCoinsCache(localcache.GetDefaultCache()).
 		WithMessagePushProducer(messagePushProducer).
-		SetupL2Clients(l2NodeClients, l2Auths, networkIDs)
+		WithL2Clients(l2NodeClients, l2Auths, networkIDs)
 	bridgeService.LogConfig()
 
 	return server.RunServer(c.UpstreamCfg.BridgeServer, bridgeService) // non-blocking
@@ -175,6 +170,7 @@ func runPushTask(ctx context.Context, c *config.XLayerConfig) error {
 		if err != nil {
 			return err
 		}
+		defer messagePushProducer.Close()
 	}
 
 	l1Etherman, err := etherman.NewClient(c.UpstreamCfg.Etherman,
@@ -267,12 +263,7 @@ func runTask(ctx context.Context, c *config.XLayerConfig) error {
 		if err != nil {
 			return err
 		}
-		defer func() {
-			err := messagePushProducer.Close()
-			if err != nil {
-				log.Errorf("close kafka producer error: %v", err)
-			}
-		}()
+		defer messagePushProducer.Close()
 	}
 
 	bridgeService := server.NewBridgeService(c.UpstreamCfg.BridgeServer, c.UpstreamCfg.BridgeController.Height, networkIDs, apiStorage)

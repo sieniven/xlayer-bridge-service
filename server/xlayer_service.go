@@ -69,7 +69,7 @@ func (s *bridgeService) LogConfig() {
 	log.Info("BridgeServer.MaxPageLimit = ", s.maxPageLimit)
 }
 
-func (s *bridgeService) SetupL2Clients(
+func (s *bridgeService) WithL2Clients(
 	l2NodeClients []*utils.Client,
 	l2Auths []*bind.TransactOpts,
 	networks []uint32,
