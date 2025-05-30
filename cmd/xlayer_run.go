@@ -21,7 +21,6 @@ import (
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/coinmiddleware"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/estimatetime"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/localcache"
-	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/messagepush"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/pushtask"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/redisstorage"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/sentinel"
@@ -97,14 +96,11 @@ func runAPI(ctx context.Context, c *config.XLayerConfig) error {
 		return err
 	}
 
-	var messagePushProducer messagepush.KafkaProducer
-	if c.MessagePushProducer.Enabled {
-		messagePushProducer, err = setupKafkaProducer(c.MessagePushProducer)
-		if err != nil {
-			return err
-		}
-		defer messagePushProducer.Close()
+	messagePushProducer, closeKafka, err := setupKafkaProducer(c.MessagePushProducer)
+	if err != nil {
+		return err
 	}
+	defer closeKafka()
 
 	l1ChainId := c.Etherman.L1ChainId
 	l2ChainIds := c.Etherman.L2ChainIds
@@ -164,14 +160,11 @@ func runPushTask(ctx context.Context, c *config.XLayerConfig) error {
 		return err
 	}
 
-	var messagePushProducer messagepush.KafkaProducer
-	if c.MessagePushProducer.Enabled {
-		messagePushProducer, err = setupKafkaProducer(c.MessagePushProducer)
-		if err != nil {
-			return err
-		}
-		defer messagePushProducer.Close()
+	messagePushProducer, closeKafka, err := setupKafkaProducer(c.MessagePushProducer)
+	if err != nil {
+		return err
 	}
+	defer closeKafka()
 
 	l1Etherman, err := etherman.NewClient(c.UpstreamCfg.Etherman,
 		c.UpstreamCfg.NetworkConfig.PolygonBridgeAddress,
@@ -257,14 +250,11 @@ func runTask(ctx context.Context, c *config.XLayerConfig) error {
 		return gerror.ErrStorageNotRegister
 	}
 
-	var messagePushProducer messagepush.KafkaProducer
-	if c.MessagePushProducer.Enabled {
-		messagePushProducer, err = setupKafkaProducer(c.MessagePushProducer)
-		if err != nil {
-			return err
-		}
-		defer messagePushProducer.Close()
+	messagePushProducer, closeKafka, err := setupKafkaProducer(c.MessagePushProducer)
+	if err != nil {
+		return err
 	}
+	defer closeKafka()
 
 	bridgeService := server.NewBridgeService(c.UpstreamCfg.BridgeServer, c.UpstreamCfg.BridgeController.Height, networkIDs, apiStorage)
 	bridgeService.LogConfig()

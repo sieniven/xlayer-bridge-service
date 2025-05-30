@@ -56,14 +56,17 @@ func setupConfigAndLog(ctx *cli.Context) (*config.XLayerConfig, error) {
 	return c, err
 }
 
-func setupKafkaProducer(cfg messagepush.Config) (messagepush.KafkaProducer, error) {
+func setupKafkaProducer(cfg messagepush.Config) (messagepush.KafkaProducer, func() error, error) {
+	if !cfg.Enabled {
+		return nil, func() error { return nil }, nil
+	}
 	var messagePushProducer messagepush.KafkaProducer
 	log.Infof("message push producer's switch is open, so init producer!")
 	messagePushProducer, err := messagepush.NewKafkaProducer(cfg)
 	if err != nil {
-		return nil, err
+		return nil, func() error { return nil }, err
 	}
-	return messagePushProducer, nil
+	return messagePushProducer, messagePushProducer.Close, nil
 }
 
 // The list of network IDs will follow as: {L1 network ID, L2 network IDs...}
