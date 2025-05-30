@@ -4,9 +4,10 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
 
-	apolloconfig "github.com/0xPolygonHermez/zkevm-bridge-service/config/apollo_xlayer"
 	businessconfig "github.com/0xPolygonHermez/zkevm-bridge-service/config/business_xlayer"
+
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/coinmiddleware"
+	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/estimatetime"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/iprestriction"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/messagepush"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/nacos"
@@ -22,7 +23,7 @@ type ethermanCfg struct {
 type serverCfg struct {
 	// SentinelConfigFilePath is the file path to store the sentinel config
 	SentinelConfigFilePath string              `mapstructure:"SentinelConfigFilePath"`
-	Redis                  redisstorage.Config `apollo:"Redis"`
+	Redis                  redisstorage.Config `mapstructure:"Redis"`
 }
 
 type metricsCfg struct {
@@ -35,6 +36,8 @@ type claimTxManCfg struct {
 	FreeGas bool `mapstructure:"FreeGas"`
 	// OptClaim enabled store claimTx into storage every deposit
 	OptClaim bool `mapstructure:"OptClaim"`
+	// Number of DB claim records to query
+	MonitorTxsLimit uint `mapstructure:"MonitorTxsLimit"`
 }
 
 type syncCfg struct {
@@ -56,13 +59,14 @@ type XLayerConfig struct {
 	Synchronizer   syncCfg
 
 	// Pure XLayer configs
-	Apollo                 apolloconfig.Config
-	NacosConfig            nacos.Config
-	BusinessConfig         businessconfig.Config `apollo:"BusinessConfig"`
-	IPRestriction          iprestriction.Config  `apollo:"IPRestriction"`
-	TokenLogoServiceConfig tokenlogoinfo.Config  `apollo:"TokenLogoServiceConfig"`
-	CoinKafkaConsumer      coinmiddleware.Config `apollo:"CoinKafkaConsumer"`
-	MessagePushProducer    messagepush.Config    `apollo:"MessagePushProducer"`
+	L1TargetBlockConfirmations uint64
+	NacosConfig                nacos.Config
+	BusinessConfig             businessconfig.Config
+	IPRestriction              iprestriction.Config
+	TokenLogoServiceConfig     tokenlogoinfo.Config
+	CoinKafkaConsumer          coinmiddleware.Config
+	MessagePushProducer        messagepush.Config
+	EstimateTime               estimatetime.Config
 }
 
 // Load the same config file, but this time load all X Layer config here.

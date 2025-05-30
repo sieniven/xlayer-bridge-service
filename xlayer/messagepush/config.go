@@ -21,4 +21,6 @@ type Config struct {
 
 	// RootCAPath points to the CA cert used for authentication
 	RootCAPath string `mapstructure:"RootCAPath"`
+
+	BizCode string `mapstructure:"BizCode"`
 }

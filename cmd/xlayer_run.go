@@ -17,10 +17,10 @@ import (
 	"github.com/0xPolygonHermez/zkevm-bridge-service/synchronizer"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/utils"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/utils/gerror"
+
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/coinmiddleware"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/estimatetime"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/localcache"
-	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/messagepush"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/pushtask"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/redisstorage"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/sentinel"
@@ -42,8 +42,6 @@ func run(ctx *cli.Context, choice string) error {
 	if err != nil {
 		return err
 	}
-
-	log.Infow("LOG FULL CONFIG", "cfg", c)
 
 	go enableMetrics(c)
 
@@ -94,22 +92,8 @@ func runAPI(ctx context.Context, c *config.XLayerConfig) error {
 		return err
 	}
 
-	if err = estimatetime.InitDefaultCalculator(apiStorage); err != nil {
+	if err = estimatetime.InitDefaultCalculator(apiStorage, c.EstimateTime); err != nil {
 		return err
-	}
-
-	var messagePushProducer messagepush.KafkaProducer
-	if c.MessagePushProducer.Enabled {
-		messagePushProducer, err = setupKafkaProducer(c.MessagePushProducer)
-		if err != nil {
-			return err
-		}
-		defer func() {
-			err := messagePushProducer.Close()
-			if err != nil {
-				log.Errorf("close kafka producer error: %v", err)
-			}
-		}()
 	}
 
 	l1ChainId := c.Etherman.L1ChainId
@@ -145,20 +129,14 @@ func runAPI(ctx context.Context, c *config.XLayerConfig) error {
 
 	registerNacos(c.NacosConfig)
 
-	if c.Apollo.Enabled {
-		err = sentinel.InitApolloDataSource(c.Apollo)
-	} else {
-		err = sentinel.InitFileDataSource(c.BridgeServer.SentinelConfigFilePath)
-	}
-	if err != nil {
-		log.Infof("init sentinel error[%v]; ignored and proceed with no sentinel config", err)
+	if err := sentinel.InitFileDataSource(c.BridgeServer.SentinelConfigFilePath); err != nil {
+		return err
 	}
 
 	bridgeService := server.NewBridgeService(c.UpstreamCfg.BridgeServer, c.UpstreamCfg.BridgeController.Height, networkIDs, apiStorage).
 		WithRedisStorage(redisStorage).
 		WithMainCoinsCache(localcache.GetDefaultCache()).
-		WithMessagePushProducer(messagePushProducer).
-		SetupL2Clients(l2NodeClients, l2Auths, networkIDs)
+		WithL2Clients(l2NodeClients, l2Auths, networkIDs)
 	bridgeService.LogConfig()
 
 	return server.RunServer(c.UpstreamCfg.BridgeServer, bridgeService) // non-blocking
@@ -175,12 +153,9 @@ func runPushTask(ctx context.Context, c *config.XLayerConfig) error {
 		return err
 	}
 
-	var messagePushProducer messagepush.KafkaProducer
-	if c.MessagePushProducer.Enabled {
-		messagePushProducer, err = setupKafkaProducer(c.MessagePushProducer)
-		if err != nil {
-			return err
-		}
+	messagePushProducer, _, err := setupKafkaProducer(c.MessagePushProducer)
+	if err != nil {
+		return err
 	}
 
 	l1Etherman, err := etherman.NewClient(c.UpstreamCfg.Etherman,
@@ -224,8 +199,6 @@ func runTask(ctx context.Context, c *config.XLayerConfig) error {
 	// Use this to run Go routines
 	errs, _ := errgroup.WithContext(ctx)
 
-	log.Infow("RUN TASK", "BusinessConfig", c.BusinessConfig)
-
 	messagebridge.InitUSDCLxLyProcessor(c.BusinessConfig.USDCContractAddresses, c.BusinessConfig.USDCTokenAddresses)
 	messagebridge.InitWstETHProcessor(c.BusinessConfig.WstETHContractAddresses, c.BusinessConfig.WstETHTokenAddresses)
 	messagebridge.InitEURCProcessor(c.BusinessConfig.EURCContractAddresses, c.BusinessConfig.EURCTokenAddresses)
@@ -236,7 +209,7 @@ func runTask(ctx context.Context, c *config.XLayerConfig) error {
 		return err
 	}
 
-	if err = estimatetime.InitDefaultCalculator(apiStorage); err != nil {
+	if err = estimatetime.InitDefaultCalculator(apiStorage, c.EstimateTime); err != nil {
 		return err
 	}
 
@@ -269,19 +242,11 @@ func runTask(ctx context.Context, c *config.XLayerConfig) error {
 		return gerror.ErrStorageNotRegister
 	}
 
-	var messagePushProducer messagepush.KafkaProducer
-	if c.MessagePushProducer.Enabled {
-		messagePushProducer, err = setupKafkaProducer(c.MessagePushProducer)
-		if err != nil {
-			return err
-		}
-		defer func() {
-			err := messagePushProducer.Close()
-			if err != nil {
-				log.Errorf("close kafka producer error: %v", err)
-			}
-		}()
+	messagePushProducer, closeKafka, err := setupKafkaProducer(c.MessagePushProducer)
+	if err != nil {
+		return err
 	}
+	defer closeKafka()
 
 	bridgeService := server.NewBridgeService(c.UpstreamCfg.BridgeServer, c.UpstreamCfg.BridgeController.Height, networkIDs, apiStorage)
 	bridgeService.LogConfig()
@@ -315,7 +280,8 @@ func runTask(ctx context.Context, c *config.XLayerConfig) error {
 		cliSyncL2 = cliSyncL2.
 			SetProducer(messagePushProducer).
 			SetRedis(redisStorage).
-			SetRollupID(uint(rollupID))
+			SetRollupID(uint(rollupID)).
+			SetLargeTxUsdLimit(c.Synchronizer.LargeTxUsdLimit)
 		errs.Go(cliSyncL2.Sync)
 
 		if c.UpstreamCfg.ClaimTxManager.Enabled {
@@ -361,7 +327,8 @@ func runTask(ctx context.Context, c *config.XLayerConfig) error {
 		cliSyncL1 = cliSyncL1.
 			SetProducer(messagePushProducer).
 			SetRedis(redisStorage).
-			SetRollupID(uint(networkID))
+			SetRollupID(uint(networkID)).
+			SetLargeTxUsdLimit(c.Synchronizer.LargeTxUsdLimit)
 	}
 	errs.Go(cliSyncL1.Sync)
 

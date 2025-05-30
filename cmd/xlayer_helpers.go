@@ -15,7 +15,6 @@ import (
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/nacos"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/tokenlogoinfo"
 
-	apolloconfig "github.com/0xPolygonHermez/zkevm-bridge-service/config/apollo_xlayer"
 	kmsDB "github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/kms"
 	xlayerUtils "github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/utils"
 )
@@ -47,32 +46,27 @@ func setupConfigAndLog(ctx *cli.Context) (*config.XLayerConfig, error) {
 
 	// NOTE: Load XLayer config over the upstream configuration.
 	c, err := config.LoadXLayerCfg(cfg)
+
 	setupLog(c.UpstreamCfg.Log)
 	xlayerUtils.InnitOkInnerChainIdMapper(c.BusinessConfig)
+	xlayerUtils.InitL1TargetBlockConfirmations(c.L1TargetBlockConfirmations)
 	iprestriction.InitClient(c.IPRestriction)
 	tokenlogoinfo.InitClient(c.TokenLogoServiceConfig)
-
-	if c.Apollo.Enabled {
-		apolloconfig.SetLogger()
-		if err = apolloconfig.Init(c.Apollo); err != nil {
-			return nil, err
-		}
-		if err = apolloconfig.Load(c.UpstreamCfg); err != nil {
-			return nil, err
-		}
-	}
 
 	return c, err
 }
 
-func setupKafkaProducer(cfg messagepush.Config) (messagepush.KafkaProducer, error) {
+func setupKafkaProducer(cfg messagepush.Config) (messagepush.KafkaProducer, func() error, error) {
+	if !cfg.Enabled {
+		return nil, func() error { return nil }, nil
+	}
 	var messagePushProducer messagepush.KafkaProducer
 	log.Infof("message push producer's switch is open, so init producer!")
 	messagePushProducer, err := messagepush.NewKafkaProducer(cfg)
 	if err != nil {
-		return nil, err
+		return nil, func() error { return nil }, err
 	}
-	return messagePushProducer, nil
+	return messagePushProducer, messagePushProducer.Close, nil
 }
 
 // The list of network IDs will follow as: {L1 network ID, L2 network IDs...}

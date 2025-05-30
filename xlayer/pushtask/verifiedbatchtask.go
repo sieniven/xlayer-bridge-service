@@ -7,7 +7,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/redis/go-redis/v9"
 
-	"github.com/0xPolygonHermez/zkevm-bridge-service/config/apollo_xlayer"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/log"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/redisstorage"
 )
@@ -18,10 +17,10 @@ const (
 )
 
 var (
-	minVerifyDuration     = apolloconfig.NewIntEntry[uint64]("pushtask.minVerifyDuration", 2)      //nolint:mnd
-	defaultVerifyDuration = apolloconfig.NewIntEntry[uint64]("pushtask.defaultVerifyDuration", 10) //nolint:mnd
-	maxVerifyDuration     = apolloconfig.NewIntEntry[uint64]("pushtask.maxVerifyDuration", 60)     //nolint:mnd
-	verifyDurationListLen = apolloconfig.NewIntEntry("pushtask.verifyDurationListLen", 5)          //nolint:mnd
+	minVerifyDuration     uint64 = 2
+	defaultVerifyDuration uint64 = 10
+	maxVerifyDuration     uint64 = 60
+	verifyDurationListLen int64  = 5
 )
 
 type VerifiedBatchHandler struct {
@@ -110,7 +109,7 @@ func (ins *VerifiedBatchHandler) freshRedisForAvgCommitDuration(ctx context.Cont
 	if err != nil {
 		return err
 	}
-	if listLen <= int64(verifyDurationListLen.Get()) {
+	if listLen <= verifyDurationListLen {
 		log.Infof("redis verify duration list is not enough, so skip count the avg duration!")
 		return nil
 	}
@@ -152,18 +151,18 @@ func (ins *VerifiedBatchHandler) checkLatestBatchLegal(ctx context.Context, late
 
 // checkAvgDurationLegal duration has a default range, 2-30 minutes, if over range, maybe dirty data, drop the data
 func (ins *VerifiedBatchHandler) checkAvgDurationLegal(avgDuration int64) bool {
-	return avgDuration > int64(minVerifyDuration.Get()) && avgDuration < int64(maxVerifyDuration.Get())
+	return avgDuration > int64(minVerifyDuration) && avgDuration < int64(maxVerifyDuration)
 }
 
 func GetAvgVerifyDuration(ctx context.Context, redisStorage redisstorage.RedisStorage) uint64 {
 	avgDuration, err := redisStorage.GetAvgVerifyDuration(ctx)
 	if err != nil && !errors.Is(err, redis.Nil) {
 		log.Errorf("get avg verify duration from redis failed, error: %v", err)
-		return defaultVerifyDuration.Get()
+		return defaultVerifyDuration
 	}
 	if avgDuration == 0 {
 		log.Infof("get avg verify duration from redis is 0, so use default")
-		return defaultVerifyDuration.Get()
+		return defaultVerifyDuration
 	}
 	return avgDuration
 }

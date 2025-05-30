@@ -1,4 +1,6 @@
 # For testing purposes
+L1TargetBlockConfirmations = 99
+
 [Log]
 Level = "info"
 Outputs = ["stdout"]
@@ -14,12 +16,15 @@ MaxConns = 20
 
 [ClaimTxManager]
 Enabled = true
+FreeGas = true
+OptClaim = true
 FrequencyToMonitorTxs = "1s"
 PrivateKey = {Path = "/pk/keystore.claimtxmanager", Password = "testonly"}
 RetryInterval = "1s"
 RetryNumber = 10
 AuthorizedClaimMessageAddresses = ["0x90F79bf6EB2c4f870365E785982E1f101E93b906"]
 AreClaimsBetweenL2sEnabled = false
+MonitorTxsLimit = 1234
 [ClaimTxManager.GroupingClaims]
     Enabled = false
     TriggerNumberOfClaims = 20
@@ -41,7 +46,7 @@ L2ChainIds = [1001] # XLayer
 SyncInterval = "1s"
 SyncChunkSize = 100
 ForceL2SyncChunk = false
-LargeTxUsdLimit = 1234
+LargeTxUsdLimit = 958
 
 [BridgeController]
 Store = "postgres"
@@ -69,6 +74,7 @@ SentinelConfigFilePath = "/app/sentinel_config.json" # XLayer
     Password = ""
     DB = 0
     MockPrice = true
+    EnablePrice = true
 
 [NetworkConfig]
 GenBlockNumber = 0
@@ -122,6 +128,7 @@ PushKey = "huh"
 Username = "bruh"
 Password = "password"
 RootCAPath = "ca path"
+BizCode = "hello"
 
 [IPRestriction]
 Enabled = false
@@ -134,3 +141,7 @@ Enabled = false
 Scheme = "http"
 LogoServiceNacosName = "testing 123"
 Timeout = "3s"
+
+[EstimateTime]
+SampleLimit = 16
+DefaultTime = [78, 12]

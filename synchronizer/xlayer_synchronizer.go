@@ -21,16 +21,18 @@ import (
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/tokenlogoinfo"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/utils/messagebridge"
 
-	apolloconfig "github.com/0xPolygonHermez/zkevm-bridge-service/config/apollo_xlayer"
 	xlUtils "github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/utils"
 )
 
 var (
-	largeTxUsdLimit = apolloconfig.NewIntEntry[uint64]("Synchronizer.LargeTxUsdLimit", 100000) //nolint:gomnd
+	// Related to filtering large transactions
+	largeTxUsdLimit uint64 = 100000
 )
 
-func init() {
+func (s *ClientSynchronizer) SetLargeTxUsdLimit(limit uint64) *ClientSynchronizer {
+	largeTxUsdLimit = limit
 	log.Info("Synchronizer.LargeTxUsdLimit = ", largeTxUsdLimit)
+	return s
 }
 
 func (s *ClientSynchronizer) beforeProcessDeposit(deposit *etherman.Deposit) {
@@ -146,7 +148,7 @@ func (s *ClientSynchronizer) filterLargeTransaction(ctx context.Context, transac
 	tokenDecimal := new(big.Float).SetPrec(uint(transaction.GetLogoInfo().Decimal)).SetFloat64(math.Pow10(int(transaction.GetLogoInfo().Decimal)))
 	tokenAmount, _ := new(big.Float).Quo(originNum, tokenDecimal).Float64()
 	usdAmount := priceInfos[0].Price * tokenAmount
-	if usdAmount < float64(largeTxUsdLimit.Get()) {
+	if usdAmount < float64(largeTxUsdLimit) {
 		log.Infof("tx usd amount less than limit, so skip, tx usd amount: %v, tx: %v", usdAmount, transaction.GetTxHash())
 		return
 	}

@@ -8,8 +8,6 @@ require (
 	github.com/IBM/sarama v1.45.1
 	github.com/alibaba/sentinel-golang v1.0.4
 	github.com/alibaba/sentinel-golang/pkg/adapters/grpc v0.0.0-20241224061304-f4c2c5964666
-	github.com/alibaba/sentinel-golang/pkg/datasource/apollo v0.0.0-20241224061304-f4c2c5964666
-	github.com/apolloconfig/agollo/v4 v4.0.9
 	github.com/barkimedes/go-deepcopy v0.0.0-20220514131651-17c30cfc62df
 	github.com/ethereum/go-ethereum v1.15.5
 	github.com/go-git/go-billy/v5 v5.5.0

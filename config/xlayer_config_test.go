@@ -32,8 +32,6 @@ func TestXLayerConfig(t *testing.T) {
 	assert.True(t, viper.IsSet("BridgeServer.Redis"))
 	fmt.Printf("Metrics.Env = %+v\n", cfg.Metrics.Env)
 	assert.True(t, viper.IsSet("Metrics.Env"), "metrics env not set")
-	fmt.Printf("Apollo = %+v\n", cfg.Apollo)
-	assert.True(t, viper.IsSet("Apollo"))
 	fmt.Printf("NacosConfig = %+v\n", cfg.NacosConfig)
 	assert.True(t, viper.IsSet("NacosConfig"))
 	fmt.Printf("BusinessConfig = %+v\n", cfg.BusinessConfig)
@@ -46,6 +44,28 @@ func TestXLayerConfig(t *testing.T) {
 	assert.True(t, viper.IsSet("CoinKafkaConsumer"))
 	fmt.Printf("MessagePushProducer = %+v\n", cfg.MessagePushProducer)
 	assert.True(t, viper.IsSet("MessagePushProducer"))
-	fmt.Printf("LargeTxUsdLimit = %+v\n", cfg.Synchronizer.LargeTxUsdLimit)
+
 	assert.True(t, viper.IsSet("Synchronizer.LargeTxUsdLimit"))
+	assert.Equal(t, uint64(958), cfg.Synchronizer.LargeTxUsdLimit)
+	assert.True(t, viper.IsSet("L1TargetBlockConfirmations"))
+	assert.Equal(t, uint64(99), cfg.L1TargetBlockConfirmations)
+	assert.True(t, viper.IsSet("ClaimTxManager.MonitorTxsLimit"))
+	assert.Equal(t, uint(1234), cfg.ClaimTxManager.MonitorTxsLimit)
+	assert.True(t, viper.IsSet("ClaimTxManager.FreeGas"))
+	assert.Equal(t, true, cfg.ClaimTxManager.FreeGas)
+	assert.True(t, viper.IsSet("ClaimTxManager.OptClaim"))
+	assert.Equal(t, true, cfg.ClaimTxManager.OptClaim)
+	assert.True(t, viper.IsSet("MessagePushProducer.BizCode"))
+	assert.Equal(t, "hello", cfg.MessagePushProducer.BizCode)
+	assert.True(t, viper.IsSet("MessagePushProducer.PushKey"))
+	assert.Equal(t, "huh", cfg.MessagePushProducer.PushKey)
+
+	assert.True(t, viper.IsSet("EstimateTime.SampleLimit"))
+	assert.Equal(t, uint32(16), cfg.EstimateTime.SampleLimit)
+	assert.True(t, viper.IsSet("EstimateTime.DefaultTime"))
+	assert.Equal(t, []uint32{78, 12}, cfg.EstimateTime.DefaultTime)
+
+	assert.True(t, viper.IsSet("BridgeServer.Redis.EnablePrice"))
+	assert.Equal(t, true, cfg.BridgeServer.Redis.EnablePrice)
+
 }

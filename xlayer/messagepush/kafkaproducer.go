@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/0xPolygonHermez/zkevm-bridge-service/bridgectrl/pb"
-	"github.com/0xPolygonHermez/zkevm-bridge-service/config/apollo_xlayer"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/log"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/utils"
 	"github.com/IBM/sarama"
@@ -48,9 +47,9 @@ type KafkaProducer interface {
 
 type kafkaProducerImpl struct {
 	producer       sarama.SyncProducer
-	defaultTopic   apolloconfig.Entry[string]
-	defaultPushKey apolloconfig.Entry[string]
-	bizCode        apolloconfig.Entry[string]
+	defaultTopic   string
+	defaultPushKey string
+	bizCode        string
 }
 
 func NewKafkaProducer(cfg Config) (KafkaProducer, error) {
@@ -89,14 +88,10 @@ func NewKafkaProducer(cfg Config) (KafkaProducer, error) {
 	}
 	kp := kafkaProducerImpl{
 		producer:       producer,
-		defaultTopic:   apolloconfig.NewStringEntry("MessagePushProducer.Topic", cfg.Topic),
-		defaultPushKey: apolloconfig.NewStringEntry("MessagePushProducer.PushKey", cfg.PushKey),
-		bizCode:        apolloconfig.NewStringEntry("MessagePushProducer.BizCode", BizCodeBridgeOrder),
+		defaultTopic:   cfg.Topic,
+		defaultPushKey: cfg.PushKey,
+		bizCode:        cfg.BizCode,
 	}
-
-	log.Info("MessagePushProducer.Topic = ", kp.defaultTopic)
-	log.Info("MessagePushProducer.PushKey = ", kp.defaultPushKey)
-	log.Info("MessagePushProducer.BizCode = ", kp.bizCode)
 	return &kp, nil
 }
 
@@ -109,8 +104,8 @@ func (p *kafkaProducerImpl) Produce(address string, msg interface{}, optFns ...p
 		return nil
 	}
 	opts := &produceOptions{
-		topic:   p.defaultTopic.Get(),
-		pushKey: p.defaultPushKey.Get(),
+		topic:   p.defaultTopic,
+		pushKey: p.defaultPushKey,
 	}
 	for _, f := range optFns {
 		f(opts)
@@ -164,7 +159,7 @@ func (p *kafkaProducerImpl) PushTransactionUpdate(tx *pb.Transaction, optFns ...
 	}
 
 	msg := &PushMessage{
-		BizCode:       p.bizCode.Get(),
+		BizCode:       p.bizCode,
 		WalletAddress: tx.GetDestAddr(),
 		RequestID:     GenerateTraceID(),
 		PushContent:   fmt.Sprintf("[%v]", string(b)),

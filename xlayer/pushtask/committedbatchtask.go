@@ -9,10 +9,10 @@ import (
 	"github.com/redis/go-redis/v9"
 
 	"github.com/0xPolygonHermez/zkevm-bridge-service/bridgectrl/pb"
-	"github.com/0xPolygonHermez/zkevm-bridge-service/config/apollo_xlayer"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/etherman"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/log"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/utils"
+
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/messagepush"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/redisstorage"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/utils/messagebridge"
@@ -26,9 +26,9 @@ const (
 )
 
 var (
-	minCommitDuration     = apolloconfig.NewIntEntry[uint64]("pushtask.minCommitDuration", 2)      //nolint:mnd
-	defaultCommitDuration = apolloconfig.NewIntEntry[uint64]("pushtask.defaultCommitDuration", 10) //nolint:mnd
-	commitDurationListLen = apolloconfig.NewIntEntry[int]("pushtask.commitDurationListLen", 5)     //nolint:mnd
+	minCommitDuration     uint64 = 2
+	defaultCommitDuration uint64 = 10
+	commitDurationListLen int    = 5
 )
 
 type CommittedBatchHandler struct {
@@ -215,7 +215,7 @@ func (ins *CommittedBatchHandler) freshRedisForAvgCommitDuration(ctx context.Con
 	if err != nil {
 		return err
 	}
-	if listLen <= int64(commitDurationListLen.Get()) {
+	if listLen <= int64(commitDurationListLen) {
 		log.Infof("redis duration list is not enough, so skip count the avg duration!")
 		return nil
 	}
@@ -298,18 +298,18 @@ func (ins *CommittedBatchHandler) pushMsgForDeposit(deposit *etherman.Deposit, l
 
 // checkAvgDurationLegal duration has a default range, 2-10 minutes, if over range, maybe dirty data, drop the data
 func (ins *CommittedBatchHandler) checkAvgDurationLegal(avgDuration int64) bool {
-	return avgDuration > int64(minCommitDuration.Get()) && avgDuration < int64(defaultCommitDuration.Get())
+	return avgDuration > int64(minCommitDuration) && avgDuration < int64(defaultCommitDuration)
 }
 
 func GetAvgCommitDuration(ctx context.Context, redisStorage redisstorage.RedisStorage) uint64 {
 	avgDuration, err := redisStorage.GetAvgCommitDuration(ctx)
 	if err != nil && !errors.Is(err, redis.Nil) {
 		log.Errorf("get avg commit duration from redis failed, error: %v", err)
-		return defaultCommitDuration.Get()
+		return defaultCommitDuration
 	}
 	if avgDuration == 0 {
 		log.Infof("get avg commit duration from redis is 0, so use default")
-		return defaultCommitDuration.Get()
+		return defaultCommitDuration
 	}
 	return avgDuration
 }
