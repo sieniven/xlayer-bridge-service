@@ -295,7 +295,8 @@ func runTask(ctx context.Context, c *config.XLayerConfig) error {
 			SetProducer(messagePushProducer).
 			SetRedis(redisStorage).
 			SetRollupID(uint(rollupID)).
-			SetLargeTxUsdLimit(c.Synchronizer.LargeTxUsdLimit)
+			SetLargeTxUsdLimit(c.Synchronizer.LargeTxUsdLimit).
+			SetEnableNotification(c.Synchronizer.EnableNotificationTracking)
 		errs.Go(cliSyncL2.Sync)
 
 		if c.UpstreamCfg.ClaimTxManager.Enabled {
@@ -342,7 +343,8 @@ func runTask(ctx context.Context, c *config.XLayerConfig) error {
 			SetProducer(messagePushProducer).
 			SetRedis(redisStorage).
 			SetRollupID(uint(networkID)).
-			SetLargeTxUsdLimit(c.Synchronizer.LargeTxUsdLimit)
+			SetLargeTxUsdLimit(c.Synchronizer.LargeTxUsdLimit).
+			SetEnableNotification(c.Synchronizer.EnableNotificationTracking)
 	}
 	errs.Go(cliSyncL1.Sync)
 

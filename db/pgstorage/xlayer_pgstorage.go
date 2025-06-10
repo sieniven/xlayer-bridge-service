@@ -28,6 +28,20 @@ func (p *PostgresStorage) AddDepositXLayer(ctx context.Context, deposit *etherma
 	return depositID, err
 }
 
+// After a successful deposit is inserted into DB from L1/L2,
+// we will record some deposit details to send notification via Kafka later.
+func (p *PostgresStorage) TrackDepositForNotification(ctx context.Context, deposit *etherman.Deposit, dbTx pgx.Tx) (bool, error) {
+	const trackDepositSQL = "INSERT INTO sync.notification_tracker (network_id, deposit_cnt, txtype) VALUES ($1, $2, $3)"
+	e := p.getExecQuerier(dbTx)
+	txtype := "ready_for_claim"
+	if deposit.NetworkID == 0 {
+		txtype = "claimed"
+	}
+	log.Infow("Track deposit for notify", "networkID", deposit.NetworkID, "deposit_cnt", deposit.DepositCount, "txtype", txtype)
+	res, err := e.Exec(ctx, trackDepositSQL, deposit.NetworkID, deposit.DepositCount, txtype)
+	return res.RowsAffected() > 0, err
+}
+
 // GetDepositsXLayer gets the deposit list which be smaller than depositCount.
 func (p *PostgresStorage) GetDepositsXLayer(ctx context.Context, destAddr string, limit uint, offset uint, messageAllowlist []common.Address, dbTx pgx.Tx) ([]*etherman.Deposit, error) {
 	const getDepositsSQL = `

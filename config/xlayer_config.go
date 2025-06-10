@@ -31,6 +31,7 @@ type metricsCfg struct {
 	Env string `mapstructure:"Env"`
 }
 
+// Applies for TASK service.
 type claimTxManCfg struct {
 	// FreeGas enabled whether gas price is 0
 	FreeGas bool `mapstructure:"FreeGas"`
@@ -40,8 +41,15 @@ type claimTxManCfg struct {
 	MonitorTxsLimit uint `mapstructure:"MonitorTxsLimit"`
 }
 
+// Applies for TASK service.
 type syncCfg struct {
 	LargeTxUsdLimit uint64 `mapstructure:"LargeTxUsdLimit"`
+
+	// When set to true, new deposits will also records into
+	// notification tracking table. These records will be used
+	// by PUSH service to check which deposits have notifications
+	// been sent.
+	EnableNotificationTracking bool `mapstructure:"EnableNotificationTracking"`
 }
 
 // We will use this config to wrap the upstream config and load

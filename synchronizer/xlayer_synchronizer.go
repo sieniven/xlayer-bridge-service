@@ -27,6 +27,9 @@ import (
 var (
 	// Related to filtering large transactions
 	largeTxUsdLimit uint64 = 100000
+
+	// Set true to track deposits for notifications be sent to internal team.
+	enableNotificationTracking bool = false
 )
 
 func (s *ClientSynchronizer) SetLargeTxUsdLimit(limit uint64) *ClientSynchronizer {
@@ -35,11 +38,23 @@ func (s *ClientSynchronizer) SetLargeTxUsdLimit(limit uint64) *ClientSynchronize
 	return s
 }
 
+func (s *ClientSynchronizer) SetEnableNotification(enable bool) *ClientSynchronizer {
+	enableNotificationTracking = enable
+	log.Info("Notification Tracking Enabled = ", enableNotificationTracking)
+	return s
+}
+
 func (s *ClientSynchronizer) beforeProcessDeposit(deposit *etherman.Deposit) {
 	messagebridge.ReplaceDepositDestAddresses(deposit)
 }
 
 func (s *ClientSynchronizer) afterProcessDeposit(deposit *etherman.Deposit, depositID uint64, dbTx pgx.Tx) error {
+	// This is to support sending internal notification to other team
+	// when a deposit is ready to claim/to be claimed.
+	if _, err := s.storage.TrackDepositForNotification(s.ctx, deposit, dbTx); err != nil {
+		log.Errorf("networkID: %d, failed to track deposit for notify, Deposit: %+v, err: %s", s.networkID, deposit, err)
+	}
+
 	// Add the deposit to Redis for L1
 	if deposit.NetworkID == 0 {
 		err := s.redisStorage.AddBlockDeposit(s.ctx, deposit)
