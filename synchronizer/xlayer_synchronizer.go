@@ -51,8 +51,10 @@ func (s *ClientSynchronizer) beforeProcessDeposit(deposit *etherman.Deposit) {
 func (s *ClientSynchronizer) afterProcessDeposit(deposit *etherman.Deposit, depositID uint64, dbTx pgx.Tx) error {
 	// This is to support sending internal notification to other team
 	// when a deposit is ready to claim/to be claimed.
-	if _, err := s.storage.TrackDepositForNotification(s.ctx, deposit, dbTx); err != nil {
-		log.Errorf("networkID: %d, failed to track deposit for notify, Deposit: %+v, err: %s", s.networkID, deposit, err)
+	if enableNotificationTracking {
+		if _, err := s.storage.TrackDepositForNotification(s.ctx, deposit, dbTx); err != nil {
+			log.Errorf("networkID: %d, failed to track deposit for notify, Deposit: %+v, err: %s", s.networkID, deposit, err)
+		}
 	}
 
 	// Add the deposit to Redis for L1
