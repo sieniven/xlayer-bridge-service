@@ -1302,6 +1302,64 @@ func (_c *storageMock_SetBridgeBalance_Call) RunAndReturn(run func(context.Conte
 	return _c
 }
 
+// TrackDepositForNotification provides a mock function with given fields: ctx, deposit, dbTx
+func (_m *storageMock) TrackDepositForNotification(ctx context.Context, deposit *etherman.Deposit, dbTx pgx.Tx) (bool, error) {
+	ret := _m.Called(ctx, deposit, dbTx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for TrackDepositForNotification")
+	}
+
+	var r0 bool
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *etherman.Deposit, pgx.Tx) (bool, error)); ok {
+		return rf(ctx, deposit, dbTx)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *etherman.Deposit, pgx.Tx) bool); ok {
+		r0 = rf(ctx, deposit, dbTx)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *etherman.Deposit, pgx.Tx) error); ok {
+		r1 = rf(ctx, deposit, dbTx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// storageMock_TrackDepositForNotification_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'TrackDepositForNotification'
+type storageMock_TrackDepositForNotification_Call struct {
+	*mock.Call
+}
+
+// TrackDepositForNotification is a helper method to define mock.On call
+//   - ctx context.Context
+//   - deposit *etherman.Deposit
+//   - dbTx pgx.Tx
+func (_e *storageMock_Expecter) TrackDepositForNotification(ctx interface{}, deposit interface{}, dbTx interface{}) *storageMock_TrackDepositForNotification_Call {
+	return &storageMock_TrackDepositForNotification_Call{Call: _e.mock.On("TrackDepositForNotification", ctx, deposit, dbTx)}
+}
+
+func (_c *storageMock_TrackDepositForNotification_Call) Run(run func(ctx context.Context, deposit *etherman.Deposit, dbTx pgx.Tx)) *storageMock_TrackDepositForNotification_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(*etherman.Deposit), args[2].(pgx.Tx))
+	})
+	return _c
+}
+
+func (_c *storageMock_TrackDepositForNotification_Call) Return(_a0 bool, _a1 error) *storageMock_TrackDepositForNotification_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *storageMock_TrackDepositForNotification_Call) RunAndReturn(run func(context.Context, *etherman.Deposit, pgx.Tx) (bool, error)) *storageMock_TrackDepositForNotification_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // UpdateL2GER provides a mock function with given fields: ctx, ger, dbTx
 func (_m *storageMock) UpdateL2GER(ctx context.Context, ger etherman.GlobalExitRoot, dbTx pgx.Tx) error {
 	ret := _m.Called(ctx, ger, dbTx)
