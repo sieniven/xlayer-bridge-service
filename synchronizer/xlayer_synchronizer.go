@@ -52,8 +52,12 @@ func (s *ClientSynchronizer) afterProcessDeposit(deposit *etherman.Deposit, depo
 	// This is to support sending internal notification to other team
 	// when a deposit is ready to claim/to be claimed.
 	if enableNotificationTracking {
-		if _, err := s.storage.TrackDepositForNotification(s.ctx, deposit, dbTx); err != nil {
+		inserted, err := s.storage.TrackDepositForNotification(s.ctx, deposit, dbTx)
+		if err != nil {
 			log.Warnf("networkID: %d, failed to track deposit for notify, Deposit: %+v, err: %s", s.networkID, deposit, err)
+		}
+		if !inserted {
+			log.Warnf("networkID: %d, did not insert deposit for notify, Deposit: %+v, err: %s", s.networkID, deposit, err)
 		}
 	}
 
