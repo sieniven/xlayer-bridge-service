@@ -1,12 +1,10 @@
 -- +migrate Up
-CREATE TYPE NOTIFICATION_TYPE AS ENUM ('claimed', 'ready_for_claim');
-
-CREATE TABLE sync.notification_tracker
+CREATE TABLE IF NOT EXISTS sync.notification_tracker
 (
     id SERIAL PRIMARY KEY,
     deposit_cnt BIGINT NOT NULL,
     network_id  INTEGER NOT NULL,
-    txtype NOTIFICATION_TYPE NOT NULL, -- "claimed" or "ready_for_claim"
+    txtype TEXT NOT NULL CHECK (txtype IN ('claimed', 'ready_for_claim')),
     is_sent BOOLEAN DEFAULT false, -- If true, Kafka notification has been sent.
     sent_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), -- with timezone
@@ -16,4 +14,3 @@ CREATE TABLE sync.notification_tracker
 
 -- +migrate Down
 DROP TABLE IF EXISTS sync.notification_tracker;
-DROP TYPE IF EXISTS NOTIFICATION_TYPE;
