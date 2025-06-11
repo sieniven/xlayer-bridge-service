@@ -3,6 +3,7 @@ CREATE TYPE NOTIFICATION_TYPE AS ENUM ('claimed', 'ready_for_claim');
 
 CREATE TABLE sync.notification_tracker
 (
+    id SERIAL PRIMARY KEY,
     deposit_cnt BIGINT NOT NULL,
     network_id  INTEGER NOT NULL,
     txtype NOTIFICATION_TYPE NOT NULL, -- "claimed" or "ready_for_claim"
@@ -10,7 +11,7 @@ CREATE TABLE sync.notification_tracker
     sent_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), -- with timezone
     message_sent bytea, -- Remember message sent, in this case, the full json string will be captured.
-    PRIMARY KEY(network_id, deposit_cnt)
+    CONSTRAINT notification_tracker_uidx UNIQUE (network_id, deposit_cnt)
 );
 
 -- +migrate Down
