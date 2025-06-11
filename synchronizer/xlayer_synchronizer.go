@@ -53,7 +53,7 @@ func (s *ClientSynchronizer) afterProcessDeposit(deposit *etherman.Deposit, depo
 	// when a deposit is ready to claim/to be claimed.
 	if enableNotificationTracking {
 		if _, err := s.storage.TrackDepositForNotification(s.ctx, deposit, dbTx); err != nil {
-			log.Errorf("networkID: %d, failed to track deposit for notify, Deposit: %+v, err: %s", s.networkID, deposit, err)
+			log.Warnf("networkID: %d, failed to track deposit for notify, Deposit: %+v, err: %s", s.networkID, deposit, err)
 		}
 	}
 
