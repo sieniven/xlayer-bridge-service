@@ -204,7 +204,10 @@ func runPushTask(ctx context.Context, c *config.XLayerConfig) error {
 	go l1BlockNumTask.Start(ctx)
 	go syncCommitBatchTask.Start(ctx)
 	go syncVerifyBatchTask.Start(ctx)
-	go depositNotifier.Start(ctx)
+	if c.DepositNotifier.Enable {
+		log.Info("DepositNotifier Enabled")
+		go depositNotifier.Start(ctx)
+	}
 
 	return nil
 }

@@ -10,6 +10,9 @@ import (
 )
 
 type DepositNotifierConfig struct {
+	// If false, nothing is run.
+	Enable bool `mapstructure:"Enable"`
+
 	// maximum number of notifications messages to push to Kafka
 	Limit uint `mapstructure:"Limit"`
 	// time string (1s, 1m)
@@ -60,6 +63,8 @@ func (dn *DepositNotifier) Start(ctx context.Context) error {
 			return nil
 		case <-ticker.C:
 			log.Info("DepositNotifier tick")
+
+			// TODO: Filter by txtype and alternate each cycle for fairness.
 
 			deposits, err := dn.storage.GetDepositsForNotification(ctx, dn.cfg.Limit)
 			if err != nil {
