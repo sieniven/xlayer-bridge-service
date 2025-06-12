@@ -11,6 +11,7 @@ import (
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/iprestriction"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/messagepush"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/nacos"
+	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/pushtask"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/redisstorage"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/tokenlogoinfo"
 )
@@ -54,6 +55,7 @@ type XLayerConfig struct {
 	CoinKafkaConsumer          coinmiddleware.Config
 	MessagePushProducer        messagepush.Config
 	EstimateTime               estimatetime.Config
+	DepositNotifier            pushtask.DepositNotifierConfig
 }
 
 // Load the same config file, but this time load all X Layer config here.

@@ -55,3 +55,8 @@ InnerChainIds = [19500]
 Enabled = true
 Brokers = ["xlayer-bridge-coin-kafka:9092"]
 Topic = "explorer_chainAddressPrice_push"
+
+[DepositNotifier]
+Limit = 3
+Interval = "3s"
+Topic = "deposit_notifier"

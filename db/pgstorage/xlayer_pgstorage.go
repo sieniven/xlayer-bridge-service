@@ -415,3 +415,37 @@ func (p *PostgresStorage) TrackDepositForNotification(ctx context.Context, depos
 	res, err := e.Exec(ctx, trackDepositSQL, deposit.NetworkID, deposit.DepositCount, txtype)
 	return res.RowsAffected() > 0, err
 }
+
+type DepositToNotify struct {
+	Id           uint64
+	DepositCount uint32
+	NetworkID    uint32
+	Txtype       string
+	IsSent       bool
+}
+
+// Query records with `is_sent = False` and start with the oldest records first.
+func (p *PostgresStorage) GetDepositsForNotification(ctx context.Context, limit uint) ([]*DepositToNotify, error) {
+	const querySQL = "select id, deposit_cnt, network_id, txtype, is_sent from sync.notification_tracker order by is_sent asc, created_at asc limit $1"
+	rows, err := p.getExecQuerier(nil).Query(ctx, querySQL, limit)
+	if err != nil {
+		return nil, err
+	}
+
+	deposits := make([]*DepositToNotify, 0, len(rows.RawValues()))
+	for rows.Next() {
+		var dep DepositToNotify
+		err = rows.Scan(&dep.Id, &dep.DepositCount, &dep.NetworkID, &dep.Txtype, &dep.IsSent)
+		if err != nil {
+			return deposits, err
+		}
+		deposits = append(deposits, &dep)
+	}
+	return deposits, nil
+}
+
+func (p *PostgresStorage) UpdateDepositForNotification(ctx context.Context, id uint64) error {
+	const updateSQL = "update sync.notification_tracker set is_sent = true and sent_at = $1 where id = $2"
+	_, err := p.getExecQuerier(nil).Query(ctx, updateSQL, time.Now(), id)
+	return err
+}
