@@ -406,9 +406,9 @@ func (p *PostgresStorage) SetBridgeBalance(ctx context.Context, originalTokenAdd
 func (p *PostgresStorage) TrackDepositForNotification(ctx context.Context, deposit *etherman.Deposit, dbTx pgx.Tx) (bool, error) {
 	const trackDepositSQL = "INSERT INTO sync.notification_tracker (network_id, deposit_cnt, txtype) VALUES ($1, $2, $3) ON CONFLICT ON CONSTRAINT notification_tracker_uidx DO NOTHING;"
 	e := p.getExecQuerier(dbTx)
-	txtype := "ready_for_claim"
+	txtype := READY_FOR_CLAIM
 	if deposit.NetworkID == 0 {
-		txtype = "claimed"
+		txtype = CLAIMED
 	}
 	log.Infow("Track deposit for notify", "networkID", deposit.NetworkID, "deposit_cnt", deposit.DepositCount, "txtype", txtype)
 

@@ -13,13 +13,6 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-const (
-	// These are actual values used in `txtype` in
-	// `sync.notification_tracker` table.
-	CLAIMED         = "claimed"
-	READY_FOR_CLAIM = "ready_for_claim"
-)
-
 type DepositNotifierConfig struct {
 	// If false, nothing is run.
 	Enable bool `mapstructure:"Enable"`
@@ -109,12 +102,12 @@ func (dn *DepositNotifier) Start(ctx context.Context) error {
 		case <-ticker.C:
 			var deposits []*pgstorage.DepositToNotify
 			// Pull the oldest records for each type for fairness.
-			claimedDeposits, err := dn.storage.GetDepositsForNotification(ctx, CLAIMED, dn.cfg.Limit)
-			readyDeposits, err := dn.storage.GetDepositsForNotification(ctx, READY_FOR_CLAIM, dn.cfg.Limit)
+			claimedDeposits, err := dn.storage.GetDepositsForNotification(ctx, pgstorage.CLAIMED, dn.cfg.Limit)
+			readyDeposits, err := dn.storage.GetDepositsForNotification(ctx, pgstorage.READY_FOR_CLAIM, dn.cfg.Limit)
 			deposits = append(deposits, claimedDeposits...)
 			deposits = append(deposits, readyDeposits...)
 
-			log.Infow("There are >= 1 deposits to notify", CLAIMED, len(claimedDeposits), READY_FOR_CLAIM, len(readyDeposits))
+			log.Infow("There are >= 1 deposits to notify", pgstorage.CLAIMED, len(claimedDeposits), pgstorage.READY_FOR_CLAIM, len(readyDeposits))
 
 			// Nothing to notify, moving on...
 			if len(deposits) == 0 {
@@ -138,8 +131,8 @@ func (dn *DepositNotifier) Start(ctx context.Context) error {
 					continue
 				}
 
-				if dep.Txtype == CLAIMED {
-				} else if dep.Txtype == READY_FOR_CLAIM {
+				if dep.Txtype == pgstorage.CLAIMED {
+				} else if dep.Txtype == pgstorage.READY_FOR_CLAIM {
 					log.Infof("Bridge: %s", r.GetDeposit())
 					proofResp, err := dn.bridgeCli.GetProof(grpcCtx, &pb.GetProofRequest{
 						DepositCnt: dep.DepositCount,
