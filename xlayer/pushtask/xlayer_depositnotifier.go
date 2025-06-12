@@ -2,6 +2,7 @@ package pushtask
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/0xPolygonHermez/zkevm-bridge-service/db"
@@ -23,11 +24,18 @@ type DepositNotifier struct {
 	storage DepositNotifierStorage
 }
 
-func NewDepositNotifier(cfg *DepositNotifierConfig, storage db.Storage) *DepositNotifier {
+func NewDepositNotifier(cfg *DepositNotifierConfig, storage db.Storage) (*DepositNotifier, error) {
+	if cfg == nil {
+		return nil, fmt.Errorf("DepositNotifierConfig is nil")
+	}
+	store, ok := storage.(DepositNotifierStorage)
+	if !ok {
+		return nil, fmt.Errorf("Failed to cast DepositNotifierStorage")
+	}
 	return &DepositNotifier{
 		cfg:     cfg,
-		storage: storage.(DepositNotifierStorage),
-	}
+		storage: store,
+	}, nil
 }
 
 func (dn *DepositNotifier) Start(ctx context.Context) error {
