@@ -7,6 +7,6 @@ import (
 )
 
 type DepositNotifierStorage interface {
-	GetDepositsForNotification(ctx context.Context, limit uint) ([]*pgstorage.DepositToNotify, error)
+	GetDepositsForNotification(ctx context.Context, txtype string, limit uint) ([]*pgstorage.DepositToNotify, error)
 	UpdateDepositForNotification(ctx context.Context, id uint64) error
 }

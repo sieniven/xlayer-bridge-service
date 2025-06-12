@@ -425,9 +425,9 @@ type DepositToNotify struct {
 }
 
 // Query records with `is_sent = False` and start with the oldest records first.
-func (p *PostgresStorage) GetDepositsForNotification(ctx context.Context, limit uint) ([]*DepositToNotify, error) {
-	const querySQL = "select id, deposit_cnt, network_id, txtype, is_sent from sync.notification_tracker order by is_sent asc, created_at asc limit $1"
-	rows, err := p.getExecQuerier(nil).Query(ctx, querySQL, limit)
+func (p *PostgresStorage) GetDepositsForNotification(ctx context.Context, txtype string, limit uint) ([]*DepositToNotify, error) {
+	const querySQL = "select id, deposit_cnt, network_id, txtype, is_sent from sync.notification_tracker where txtype = $1 order by is_sent asc, created_at asc limit $2"
+	rows, err := p.getExecQuerier(nil).Query(ctx, querySQL, txtype, limit)
 	if err != nil {
 		return nil, err
 	}
