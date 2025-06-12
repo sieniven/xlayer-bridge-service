@@ -61,3 +61,4 @@ Enable = true
 Limit = 3
 Interval = "3s"
 Topic = "deposit_notifier"
+BridgeUrl = "xlayer-bridge-service-api:9090"

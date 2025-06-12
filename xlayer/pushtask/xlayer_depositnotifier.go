@@ -23,7 +23,6 @@ const (
 type DepositNotifierConfig struct {
 	// If false, nothing is run.
 	Enable bool `mapstructure:"Enable"`
-
 	// Maximum number of notifications messages to push to Kafka.
 	// This means up to `Limit` records will be fetched for each
 	// `claimed` and `ready_for_claim` deposits.
@@ -32,6 +31,8 @@ type DepositNotifierConfig struct {
 	Interval string `mapstructure:"Interval"`
 	// Kafka topic to push messages to
 	Topic string `mapstructure:"Topic"`
+	// Url to the bridge API (gRPC).
+	BridgeUrl string `mapstructure:"BridgeUrl"`
 }
 
 type DepositNotifier struct {
@@ -46,22 +47,21 @@ func NewDepositNotifier(cfg *DepositNotifierConfig, storage db.Storage) (*Deposi
 	if cfg == nil {
 		return nil, fmt.Errorf("DepositNotifierConfig is nil")
 	}
+
 	store, ok := storage.(DepositNotifierStorage)
 	if !ok {
 		return nil, fmt.Errorf("Failed to cast DepositNotifierStorage")
 	}
 
-	conn, err := grpc.NewClient("xlayer-bridge-service-api:9090", // TODO: allow this to be set in config
-		grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(cfg.BridgeUrl, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, fmt.Errorf("did not connect: %v", err)
 	}
-	c := pb.NewBridgeServiceClient(conn)
 
 	return &DepositNotifier{
 		cfg:       cfg,
 		storage:   store,
-		bridgeCli: c,
+		bridgeCli: pb.NewBridgeServiceClient(conn),
 	}, nil
 }
 
