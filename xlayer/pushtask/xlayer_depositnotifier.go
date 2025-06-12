@@ -43,6 +43,23 @@ type DepositNotifier struct {
 	bridgeCli pb.BridgeServiceClient
 }
 
+const retryPolicy = `{
+	"methodConfig": [{
+		"name": [{"service": "your_project.YourService"}],
+		"retryPolicy": {
+			"MaxAttempts": 4,
+			"InitialBackoff": "0.1s",
+			"MaxBackoff": "1s",
+			"BackoffMultiplier": 2.0,
+			"RetryableStatusCodes": [
+				"UNAVAILABLE",
+				"INTERNAL",
+				"DEADLINE_EXCEEDED"
+			]
+		}
+	}]
+}`
+
 func NewDepositNotifier(cfg *DepositNotifierConfig, storage db.Storage) (*DepositNotifier, error) {
 	if cfg == nil {
 		return nil, fmt.Errorf("DepositNotifierConfig is nil")
@@ -53,7 +70,12 @@ func NewDepositNotifier(cfg *DepositNotifierConfig, storage db.Storage) (*Deposi
 		return nil, fmt.Errorf("Failed to cast DepositNotifierStorage")
 	}
 
-	conn, err := grpc.NewClient(cfg.BridgeUrl, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(
+		cfg.BridgeUrl,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithDefaultServiceConfig(retryPolicy), // Apply the retry policy
+		grpc.WithMaxCallAttempts(4),                // Important: This caps the total attempts, ensure it matches MaxAttempts in policy
+	)
 	if err != nil {
 		return nil, fmt.Errorf("did not connect: %v", err)
 	}
@@ -105,7 +127,7 @@ func (dn *DepositNotifier) Start(ctx context.Context) error {
 			}
 
 			for _, dep := range deposits {
-				grpcCtx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+				grpcCtx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 				defer cancel()
 				r, err := dn.bridgeCli.GetBridge(grpcCtx, &pb.GetBridgeRequest{
 					DepositCnt: dep.DepositCount,
