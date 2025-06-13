@@ -21,6 +21,7 @@ import (
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/coinmiddleware"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/estimatetime"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/localcache"
+	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/messagepush"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/pushtask"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/redisstorage"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/sentinel"
@@ -165,6 +166,7 @@ func runPushTask(ctx context.Context, c *config.XLayerConfig) error {
 	if err != nil {
 		return err
 	}
+	messagepush.SetNotifierTopic(c.DepositNotifier.Topic)
 
 	l1Etherman, err := etherman.NewClient(c.UpstreamCfg.Etherman,
 		c.UpstreamCfg.NetworkConfig.PolygonBridgeAddress,
@@ -196,7 +198,7 @@ func runPushTask(ctx context.Context, c *config.XLayerConfig) error {
 		return err
 	}
 
-	depositNotifier, err := pushtask.NewDepositNotifier(&c.DepositNotifier, apiStorage)
+	depositNotifier, err := pushtask.NewDepositNotifier(&c.DepositNotifier, apiStorage, messagePushProducer)
 	if err != nil {
 		return err
 	}

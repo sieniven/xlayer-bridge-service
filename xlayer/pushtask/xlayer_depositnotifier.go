@@ -9,8 +9,13 @@ import (
 	"github.com/0xPolygonHermez/zkevm-bridge-service/db"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/db/pgstorage"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/log"
+	"github.com/0xPolygonHermez/zkevm-bridge-service/xlayer/messagepush"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+)
+
+const (
+	VERSION = "1"
 )
 
 type DepositNotifierConfig struct {
@@ -30,12 +35,15 @@ type DepositNotifierConfig struct {
 
 type DepositNotifier struct {
 	cfg *DepositNotifierConfig
-
+	// Use bridge DB pull deposit information.
 	storage DepositNotifierStorage
-
+	// Calls bridge gRPC endpoints to build claim messages
 	bridgeCli pb.BridgeServiceClient
+	// Reuse bridge kafka producer to send messages
+	producer messagepush.KafkaProducer
 }
 
+// gRPC client retry configuration string.
 const retryPolicy = `{
 	"methodConfig": [{
 		"name": [{"service": "your_project.YourService"}],
@@ -53,7 +61,7 @@ const retryPolicy = `{
 	}]
 }`
 
-func NewDepositNotifier(cfg *DepositNotifierConfig, storage db.Storage) (*DepositNotifier, error) {
+func NewDepositNotifier(cfg *DepositNotifierConfig, storage db.Storage, producer messagepush.KafkaProducer) (*DepositNotifier, error) {
 	if cfg == nil {
 		return nil, fmt.Errorf("DepositNotifierConfig is nil")
 	}
@@ -94,11 +102,15 @@ func (dn *DepositNotifier) Start(ctx context.Context) error {
 	}
 
 	ticker := time.NewTicker(duration)
+	defer ticker.Stop()
+
 	for {
 		select {
+
 		case <-ctx.Done():
 			log.Warn("Notifier is shutting down...")
 			return nil
+
 		case <-ticker.C:
 			var deposits []*pgstorage.DepositToNotify
 			// Pull the oldest records for each type for fairness.
@@ -120,9 +132,7 @@ func (dn *DepositNotifier) Start(ctx context.Context) error {
 			}
 
 			for _, dep := range deposits {
-				grpcCtx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-				defer cancel()
-				r, err := dn.bridgeCli.GetBridge(grpcCtx, &pb.GetBridgeRequest{
+				bridgeRes, err := dn.bridgeCli.GetBridge(ctx, &pb.GetBridgeRequest{
 					DepositCnt: dep.DepositCount,
 					NetId:      dep.NetworkID,
 				})
@@ -130,21 +140,67 @@ func (dn *DepositNotifier) Start(ctx context.Context) error {
 					log.Warnf("Failed to get bridge. Cnt = %d, NetId = %d, %v", dep.DepositCount, dep.NetworkID, err)
 					continue
 				}
+				d := bridgeRes.GetDeposit()
 
-				if dep.Txtype == pgstorage.CLAIMED {
-				} else if dep.Txtype == pgstorage.READY_FOR_CLAIM {
-					log.Infof("Bridge: %s", r.GetDeposit())
-					proofResp, err := dn.bridgeCli.GetProof(grpcCtx, &pb.GetProofRequest{
+				switch dep.Txtype {
+				case pgstorage.CLAIMED:
+					claimedMsg := ClaimedMessage{
+						Version: VERSION,
+						TxType:  dep.Txtype,
+						Deposit: DepositInfo{
+							Count:  fmt.Sprint(d.DepositCnt),
+							TxHash: d.TxHash,
+						},
+						Claim: ClaimedInfo{
+							TxHash: d.ClaimTxHash,
+						},
+					}
+
+					log.Debugw("Claimed message to be sent", "msg", claimedMsg)
+					if err = messagepush.Notify(dn.producer, claimedMsg); err != nil {
+						log.Warnw("Failed to send notification for claimed message.", "err", err)
+					}
+
+				case pgstorage.READY_FOR_CLAIM:
+					proofResp, err := dn.bridgeCli.GetProof(ctx, &pb.GetProofRequest{
 						DepositCnt: dep.DepositCount,
+						NetId:      dep.NetworkID,
 					})
-
-					// TODO: if any requests failed, we should make it `is_sent` as true to avoid double send.
 					if err != nil {
 						log.Warnf("Failed to get merkle proof. Cnt = %d, NetId = %d, %v", dep.DepositCount, dep.NetworkID, err)
 						continue
 					}
-					log.Infof("Proof: %s", proofResp.GetProof())
-				} else {
+
+					readyForClaimMsg := ReadyForClaimMessage{
+						Version: VERSION,
+						TxType:  dep.Txtype,
+						Deposit: DepositInfo{
+							Count:  fmt.Sprint(d.DepositCnt),
+							TxHash: d.TxHash,
+						},
+						Claim: ToClaimInfo{
+							// from /merkle-proof endpoint
+							SmtProofLocalER:  proofResp.Proof.GetMerkleProof(),
+							SmtProofRollupER: proofResp.Proof.GetRollupMerkleProof(),
+							MainnetER:        proofResp.Proof.GetMainExitRoot(),
+							RollupER:         proofResp.Proof.GetRollupExitRoot(),
+
+							// from /bridge endpoint
+							GlobalIndex:   d.GlobalIndex,
+							OriginNetwork: fmt.Sprint(d.OrigNet),
+							OriginTokenAddr: d.OrigAddr,
+							DestNetwork: fmt.Sprint(d.DestNet),
+							DestAddr: d.DestAddr,
+							Amount: d.Amount,
+							Metadata: d.Metadata,
+						},
+					}
+					log.Debugw("ReadyForClaim message to be sent", "msg", readyForClaimMsg)
+					if err = messagepush.Notify(dn.producer, readyForClaimMsg); err != nil {
+						log.Warnw("Failed to send notification for ready_for_claim message.", "err", err)
+					}
+
+				default:
 					log.Error("Unknown txtype, not possible")
 				}
 			}
