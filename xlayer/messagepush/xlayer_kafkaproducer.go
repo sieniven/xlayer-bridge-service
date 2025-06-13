@@ -13,6 +13,7 @@ var (
 
 func SetNotifierTopic(topic string) {
 	notifier_topic = topic
+	log.Infow("Set notifier topic", "topic", notifier_topic)
 }
 
 // Used to send messages to internal teams.
@@ -23,8 +24,6 @@ func (p *kafkaProducerImpl) Notify(msg interface{}) error {
 		return err
 	}
 
-	log.Debugw("Notify JSON msg", "msg", msgString)
-
 	produceMsg := &sarama.ProducerMessage{
 		Topic: notifier_topic,
 		Value: sarama.StringEncoder(msgString),
@@ -32,12 +31,15 @@ func (p *kafkaProducerImpl) Notify(msg interface{}) error {
 
 	partition, offset, err := p.producer.SendMessage(produceMsg)
 
-	log.Debugf("Send notification to Kafka: topic[%v] msg[%v] partition[%v] offset[%v]", p.defaultTopic, msgString, partition, offset)
+	log.Debugf("Send notification to Kafka: topic[%v] msg[%v] partition[%v] offset[%v]", notifier_topic, msgString, partition, offset)
 	return nil
 }
 
 // Small wrapper to expose private method
 func Notify(producer KafkaProducer, msg interface{}) error {
+	if producer == nil {
+		return fmt.Errorf("Notifier producer is nil")
+	}
 	if notifier_topic == "" {
 		return fmt.Errorf("Notifier topic is empty.")
 	}

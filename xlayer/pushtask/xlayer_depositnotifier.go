@@ -85,6 +85,7 @@ func NewDepositNotifier(cfg *DepositNotifierConfig, storage db.Storage, producer
 		cfg:       cfg,
 		storage:   store,
 		bridgeCli: pb.NewBridgeServiceClient(conn),
+		producer:  producer,
 	}, nil
 }
 
@@ -155,8 +156,6 @@ func (dn *DepositNotifier) Start(ctx context.Context) error {
 							TxHash: d.ClaimTxHash,
 						},
 					}
-
-					log.Debugw("Claimed message to be sent", "msg", claimedMsg)
 					if err = messagepush.Notify(dn.producer, claimedMsg); err != nil {
 						log.Warnw("Failed to send notification for claimed message.", "err", err)
 					}
@@ -179,23 +178,22 @@ func (dn *DepositNotifier) Start(ctx context.Context) error {
 							TxHash: d.TxHash,
 						},
 						Claim: ToClaimInfo{
-							// from /merkle-proof endpoint
+							// from "/merkle-proof" endpoint
 							SmtProofLocalER:  proofResp.Proof.GetMerkleProof(),
 							SmtProofRollupER: proofResp.Proof.GetRollupMerkleProof(),
 							MainnetER:        proofResp.Proof.GetMainExitRoot(),
 							RollupER:         proofResp.Proof.GetRollupExitRoot(),
 
-							// from /bridge endpoint
-							GlobalIndex:   d.GlobalIndex,
-							OriginNetwork: fmt.Sprint(d.OrigNet),
+							// from "/bridge" endpoint
+							GlobalIndex:     d.GlobalIndex,
+							OriginNetwork:   fmt.Sprint(d.OrigNet),
 							OriginTokenAddr: d.OrigAddr,
-							DestNetwork: fmt.Sprint(d.DestNet),
-							DestAddr: d.DestAddr,
-							Amount: d.Amount,
-							Metadata: d.Metadata,
+							DestNetwork:     fmt.Sprint(d.DestNet),
+							DestAddr:        d.DestAddr,
+							Amount:          d.Amount,
+							Metadata:        d.Metadata,
 						},
 					}
-					log.Debugw("ReadyForClaim message to be sent", "msg", readyForClaimMsg)
 					if err = messagepush.Notify(dn.producer, readyForClaimMsg); err != nil {
 						log.Warnw("Failed to send notification for ready_for_claim message.", "err", err)
 					}
