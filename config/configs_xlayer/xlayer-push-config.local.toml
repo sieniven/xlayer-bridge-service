@@ -60,5 +60,5 @@ Topic = "explorer_chainAddressPrice_push"
 Enable = true
 Limit = 3
 Interval = "3s"
-Topic = "deposit_notifier"
+Topic = "deposit_notifier_push"
 BridgeUrl = "xlayer-bridge-service-api:9090"
