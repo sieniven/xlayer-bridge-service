@@ -17,4 +17,9 @@ type syncCfg struct {
 	// by PUSH service to check which deposits have notifications
 	// been sent.
 	EnableNotificationTracking bool `mapstructure:"EnableNotificationTracking"`
+
+	// Used in synchronizer when EnableNotificationTracking is set true.
+	// This is used to determine txtype (claimed/ready_for_claim) to be set for the deposit
+	// based on direction of deposit (L1->L2, L2->L1). Default is 0.
+	L1NetID uint32 `mapstructure:"L1NetID"`
 }

@@ -408,8 +408,7 @@ func (p *PostgresStorage) TrackDepositForNotification(ctx context.Context, depos
 	e := p.getExecQuerier(dbTx)
 	txtype := READY_FOR_CLAIM
 
-	// NOTE: Are you sure networkID is always 0 on mainnet?
-	if deposit.NetworkID == 0 {
+	if deposit.NetworkID == L1netId {
 		txtype = CLAIMED
 	}
 	log.Infow("Track deposit for notify", "networkID", deposit.NetworkID, "deposit_cnt", deposit.DepositCount, "txtype", txtype)

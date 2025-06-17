@@ -43,6 +43,7 @@ SyncInterval = "3s"
 SyncChunkSize = 100
 ForceL2SyncChunk = true # NOTE: this seems to address L2 stuck issue
 EnableNotificationTracking = true
+L1NetID = 0
 
 [BridgeController]
 Store = "postgres"
