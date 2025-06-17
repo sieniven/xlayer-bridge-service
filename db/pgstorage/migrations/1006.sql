@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS sync.notification_tracker
     network_id  INTEGER NOT NULL,
     txtype TEXT NOT NULL CHECK (txtype IN ('claimed', 'ready_for_claim')),
     is_sent BOOLEAN DEFAULT false, -- If true, Kafka notification has been sent.
+    skipped BOOLEAN DEFAULT false, -- If true, this deposit will not tracked
     sent_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), -- with timezone
     message_sent bytea, -- Remember message sent, in this case, the full json string will be captured.

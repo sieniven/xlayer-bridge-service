@@ -31,6 +31,8 @@ type DepositNotifierConfig struct {
 	Topic string `mapstructure:"Topic"`
 	// Url to the bridge API (gRPC).
 	BridgeUrl string `mapstructure:"BridgeUrl"`
+	// After this duration (1s, 1m), the deposit will no longer be tracked.
+	MaxTrackTime string `mapstructure:"MaxTrackTime"`
 }
 
 type DepositNotifier struct {
@@ -41,6 +43,9 @@ type DepositNotifier struct {
 	bridgeCli pb.BridgeServiceClient
 	// Reuse bridge kafka producer to send messages
 	producer messagepush.KafkaProducer
+
+	interval     time.Duration
+	maxTrackTime time.Duration
 }
 
 // gRPC client retry configuration string.
@@ -71,6 +76,18 @@ func NewDepositNotifier(cfg *DepositNotifierConfig, storage db.Storage, producer
 		return nil, fmt.Errorf("Failed to cast DepositNotifierStorage")
 	}
 
+	interval, err := time.ParseDuration(cfg.Interval)
+	if err != nil {
+		return nil, err
+	}
+
+	maxTrackTime, err := time.ParseDuration(cfg.MaxTrackTime)
+	if err != nil {
+		return nil, err
+	}
+
+	log.Infow("Deposit Notifier times", "interval", interval, "maxTrackTime", maxTrackTime)
+
 	conn, err := grpc.NewClient(
 		cfg.BridgeUrl,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
@@ -82,20 +99,17 @@ func NewDepositNotifier(cfg *DepositNotifierConfig, storage db.Storage, producer
 	}
 
 	return &DepositNotifier{
-		cfg:       cfg,
-		storage:   store,
-		bridgeCli: pb.NewBridgeServiceClient(conn),
-		producer:  producer,
+		cfg:          cfg,
+		storage:      store,
+		bridgeCli:    pb.NewBridgeServiceClient(conn),
+		producer:     producer,
+		interval:     interval,
+		maxTrackTime: maxTrackTime,
 	}, nil
 }
 
 func (dn *DepositNotifier) Start(ctx context.Context) error {
-	duration, err := time.ParseDuration(dn.cfg.Interval)
-	if err != nil {
-		return err
-	}
-
-	ticker := time.NewTicker(duration)
+	ticker := time.NewTicker(dn.interval)
 	defer ticker.Stop()
 
 	for {
@@ -123,14 +137,24 @@ func (dn *DepositNotifier) Start(ctx context.Context) error {
 			deposits = append(deposits, claimedDeposits...)
 			deposits = append(deposits, readyDeposits...)
 
-			log.Infow("There are >= 1 deposits to notify", pgstorage.CLAIMED, len(claimedDeposits), pgstorage.READY_FOR_CLAIM, len(readyDeposits))
-
 			// Nothing to notify, moving on...
 			if len(deposits) == 0 {
 				continue
 			}
 
+			log.Infow("There are >= 1 deposits to notify", pgstorage.CLAIMED, len(claimedDeposits), pgstorage.READY_FOR_CLAIM, len(readyDeposits))
+
 			for _, dep := range deposits {
+				// If deposit was not claimed or ready for claim exceeding time limit, we will skip
+				// this deposit and continue.
+				if time.Now().Sub(dep.CreatedAt) > dn.maxTrackTime {
+					if err = dn.storage.SkipDepositForNotification(ctx, dep.Id); err != nil {
+						log.Errorw("Failed to mark record for deposit to skip.", "Cnt", dep.DepositCount, "NetID", dep.NetworkID, "err", err)
+						continue
+					}
+					log.Infow("Skipped deposit", "Cnt", dep.DepositCount, "NetID", dep.NetworkID)
+					continue
+				}
 
 				bridgeRes, err := dn.bridgeCli.GetBridge(ctx, &pb.GetBridgeRequest{
 					DepositCnt: dep.DepositCount,

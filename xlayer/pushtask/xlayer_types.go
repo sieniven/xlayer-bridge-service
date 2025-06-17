@@ -8,7 +8,8 @@ import (
 
 type DepositNotifierStorage interface {
 	GetDepositsForNotification(ctx context.Context, txtype string, limit uint) ([]*pgstorage.DepositToNotify, error)
-  UpdateDepositForNotification(ctx context.Context, id uint64, msg []byte) error
+	UpdateDepositForNotification(ctx context.Context, id uint64, msg []byte) error
+	SkipDepositForNotification(ctx context.Context, id uint64) error
 }
 
 type DepositInfo struct {

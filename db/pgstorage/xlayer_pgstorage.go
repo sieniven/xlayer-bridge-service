@@ -407,6 +407,8 @@ func (p *PostgresStorage) TrackDepositForNotification(ctx context.Context, depos
 	const trackDepositSQL = "INSERT INTO sync.notification_tracker (network_id, deposit_cnt, txtype) VALUES ($1, $2, $3) ON CONFLICT ON CONSTRAINT notification_tracker_uidx DO NOTHING;"
 	e := p.getExecQuerier(dbTx)
 	txtype := READY_FOR_CLAIM
+
+	// NOTE: Are you sure networkID is always 0 on mainnet?
 	if deposit.NetworkID == 0 {
 		txtype = CLAIMED
 	}
@@ -422,11 +424,12 @@ type DepositToNotify struct {
 	NetworkID    uint32
 	Txtype       string
 	IsSent       bool
+	CreatedAt    time.Time
 }
 
 // Query records with `is_sent = False` and start with the oldest records first.
 func (p *PostgresStorage) GetDepositsForNotification(ctx context.Context, txtype string, limit uint) ([]*DepositToNotify, error) {
-	const querySQL = "select id, deposit_cnt, network_id, txtype, is_sent from sync.notification_tracker where txtype = $1 and is_sent = false order by created_at asc limit $2"
+	const querySQL = "select id, deposit_cnt, network_id, txtype, is_sent, created_at from sync.notification_tracker where txtype = $1 and is_sent = false and skipped = false order by created_at asc limit $2"
 	rows, err := p.getExecQuerier(nil).Query(ctx, querySQL, txtype, limit)
 	if err != nil {
 		return nil, err
@@ -435,7 +438,7 @@ func (p *PostgresStorage) GetDepositsForNotification(ctx context.Context, txtype
 	deposits := make([]*DepositToNotify, 0, len(rows.RawValues()))
 	for rows.Next() {
 		var dep DepositToNotify
-		err = rows.Scan(&dep.Id, &dep.DepositCount, &dep.NetworkID, &dep.Txtype, &dep.IsSent)
+		err = rows.Scan(&dep.Id, &dep.DepositCount, &dep.NetworkID, &dep.Txtype, &dep.IsSent, &dep.CreatedAt)
 		if err != nil {
 			return deposits, err
 		}
@@ -447,5 +450,11 @@ func (p *PostgresStorage) GetDepositsForNotification(ctx context.Context, txtype
 func (p *PostgresStorage) UpdateDepositForNotification(ctx context.Context, id uint64, msg []byte) error {
 	const updateSQL = "update sync.notification_tracker set is_sent = true, sent_at = $1, message_sent = $2 where id = $3"
 	_, err := p.getExecQuerier(nil).Query(ctx, updateSQL, time.Now(), msg, id)
+	return err
+}
+
+func (p *PostgresStorage) SkipDepositForNotification(ctx context.Context, id uint64) error {
+	const updateSQL = "update sync.notification_tracker set skipped = true where id = $1"
+	_, err := p.getExecQuerier(nil).Query(ctx, updateSQL, id)
 	return err
 }
