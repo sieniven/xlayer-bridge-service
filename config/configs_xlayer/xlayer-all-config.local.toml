@@ -28,6 +28,7 @@ AreClaimsBetweenL2sEnabled = false
 SyncInterval = "3s"
 SyncChunkSize = 100
 ForceL2SyncChunk = true
+EnableNotificationTracking = true
 
 [SyncDB]
 Database = "postgres"
@@ -104,3 +105,11 @@ ConsumerGroupID = "xlayer-bridge-service"
 InitialOffset = -1
 Username = ""
 Password = ""
+
+[DepositNotifier]
+Enable = true
+Limit = 3
+Interval = "3s"
+MaxTrackTime = "5m"
+Topic = "deposit_notifier_push"
+BridgeUrl = "xlayer-bridge-service:9090"
