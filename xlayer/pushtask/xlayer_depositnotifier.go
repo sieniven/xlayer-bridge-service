@@ -109,7 +109,17 @@ func (dn *DepositNotifier) Start(ctx context.Context) error {
 			var deposits []*pgstorage.DepositToNotify
 			// Pull the oldest records for each type for fairness.
 			claimedDeposits, err := dn.storage.GetDepositsForNotification(ctx, pgstorage.CLAIMED, dn.cfg.Limit)
+			if err != nil {
+				log.Warnw("GetDepositsForNotification (claimed) FAILED", "err", err)
+				continue
+			}
+
 			readyDeposits, err := dn.storage.GetDepositsForNotification(ctx, pgstorage.READY_FOR_CLAIM, dn.cfg.Limit)
+			if err != nil {
+				log.Warnw("GetDepositsForNotification (ready_for_claim) FAILED", "err", err)
+				continue
+			}
+
 			deposits = append(deposits, claimedDeposits...)
 			deposits = append(deposits, readyDeposits...)
 
@@ -118,11 +128,6 @@ func (dn *DepositNotifier) Start(ctx context.Context) error {
 			// Nothing to notify, moving on...
 			if len(deposits) == 0 {
 				continue
-			}
-
-			if err != nil {
-				log.Warnw("GetDepositsForNotification FAILED", "err", err)
-				return err
 			}
 
 			for _, dep := range deposits {
