@@ -198,15 +198,16 @@ func runPushTask(ctx context.Context, c *config.XLayerConfig) error {
 		return err
 	}
 
-	depositNotifier, err := pushtask.NewDepositNotifier(&c.DepositNotifier, apiStorage, messagePushProducer)
-	if err != nil {
-		return err
-	}
-
 	go l1BlockNumTask.Start(ctx)
 	go syncCommitBatchTask.Start(ctx)
 	go syncVerifyBatchTask.Start(ctx)
+
 	if c.DepositNotifier.Enable {
+		depositNotifier, err := pushtask.NewDepositNotifier(&c.DepositNotifier, apiStorage, messagePushProducer)
+		if err != nil {
+			return err
+		}
+
 		log.Info("DepositNotifier Enabled")
 		go depositNotifier.Start(ctx)
 	}
