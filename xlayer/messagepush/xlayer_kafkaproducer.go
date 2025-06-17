@@ -18,10 +18,10 @@ func SetNotifierTopic(topic string) {
 
 // Used to send messages to internal teams.
 // This to ensure we publish to a different topic than the one used.
-func (p *kafkaProducerImpl) Notify(msg interface{}) error {
+func (p *kafkaProducerImpl) Notify(msg interface{}) (string, error) {
 	msgString, err := convertMsgToString(msg)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	produceMsg := &sarama.ProducerMessage{
@@ -32,20 +32,20 @@ func (p *kafkaProducerImpl) Notify(msg interface{}) error {
 	partition, offset, err := p.producer.SendMessage(produceMsg)
 
 	log.Debugf("Send notification to Kafka: topic[%v] msg[%v] partition[%v] offset[%v]", notifier_topic, msgString, partition, offset)
-	return nil
+	return msgString, nil
 }
 
 // Small wrapper to expose private method
-func Notify(producer KafkaProducer, msg interface{}) error {
+func Notify(producer KafkaProducer, msg interface{}) (string, error) {
 	if producer == nil {
-		return fmt.Errorf("Notifier producer is nil")
+		return "", fmt.Errorf("Notifier producer is nil")
 	}
 	if notifier_topic == "" {
-		return fmt.Errorf("Notifier topic is empty.")
+		return "", fmt.Errorf("Notifier topic is empty.")
 	}
 	p, ok := producer.(*kafkaProducerImpl)
 	if !ok {
-		return fmt.Errorf("Fail to cast kafkaProducerImpl for Notifier")
+		return "", fmt.Errorf("Fail to cast kafkaProducerImpl for Notifier")
 	}
 	return p.Notify(msg)
 }

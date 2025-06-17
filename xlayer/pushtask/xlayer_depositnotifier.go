@@ -90,13 +90,6 @@ func NewDepositNotifier(cfg *DepositNotifierConfig, storage db.Storage, producer
 }
 
 func (dn *DepositNotifier) Start(ctx context.Context) error {
-	// Capture any panics in Go routine and log.
-	defer func() {
-		if r := recover(); r != nil {
-			log.Info("Notifier panicked: ", r)
-		}
-	}()
-
 	duration, err := time.ParseDuration(dn.cfg.Interval)
 	if err != nil {
 		return err
@@ -133,6 +126,7 @@ func (dn *DepositNotifier) Start(ctx context.Context) error {
 			}
 
 			for _, dep := range deposits {
+
 				bridgeRes, err := dn.bridgeCli.GetBridge(ctx, &pb.GetBridgeRequest{
 					DepositCnt: dep.DepositCount,
 					NetId:      dep.NetworkID,
@@ -145,6 +139,11 @@ func (dn *DepositNotifier) Start(ctx context.Context) error {
 
 				switch dep.Txtype {
 				case pgstorage.CLAIMED:
+					// Skip if deposit (L1->L2) has not been claimed.
+					if d.ClaimTxHash == "" {
+						continue
+					}
+
 					claimedMsg := ClaimedMessage{
 						Version: VERSION,
 						TxType:  dep.Txtype,
@@ -156,11 +155,23 @@ func (dn *DepositNotifier) Start(ctx context.Context) error {
 							TxHash: d.ClaimTxHash,
 						},
 					}
-					if err = messagepush.Notify(dn.producer, claimedMsg); err != nil {
+
+					var msg string
+					if msg, err = messagepush.Notify(dn.producer, claimedMsg); err != nil {
 						log.Warnw("Failed to send notification for claimed message.", "err", err)
 					}
 
+					if err = dn.storage.UpdateDepositForNotification(ctx, dep.Id, []byte(msg)); err != nil {
+						log.Warnw("Failed to update record for ready_for_claim message.", "err", err)
+					}
+
 				case pgstorage.READY_FOR_CLAIM:
+					// Skip if (L2->L1) is not ready for claim
+					if !d.ReadyForClaim {
+						log.Debugw("L2 to L1 txn not ready for claim yet...", "Cnt", dep.DepositCount, "NetworkID", dep.NetworkID)
+						continue
+					}
+
 					proofResp, err := dn.bridgeCli.GetProof(ctx, &pb.GetProofRequest{
 						DepositCnt: dep.DepositCount,
 						NetId:      dep.NetworkID,
@@ -194,8 +205,14 @@ func (dn *DepositNotifier) Start(ctx context.Context) error {
 							Metadata:        d.Metadata,
 						},
 					}
-					if err = messagepush.Notify(dn.producer, readyForClaimMsg); err != nil {
+
+					var msg string
+					if msg, err = messagepush.Notify(dn.producer, readyForClaimMsg); err != nil {
 						log.Warnw("Failed to send notification for ready_for_claim message.", "err", err)
+					}
+
+					if err = dn.storage.UpdateDepositForNotification(ctx, dep.Id, []byte(msg)); err != nil {
+						log.Warnw("Failed to update record for ready_for_claim message.", "err", err)
 					}
 
 				default:
