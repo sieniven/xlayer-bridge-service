@@ -2,9 +2,13 @@ package server
 
 import (
 	"context"
+	"math/big"
+	"time"
 
 	"github.com/0xPolygonHermez/zkevm-bridge-service/etherman"
 	"github.com/ethereum/go-ethereum/common"
+
+	ctmtypes "github.com/0xPolygonHermez/zkevm-bridge-service/claimtxman/types"
 )
 
 type bridgeServiceStorage interface {
@@ -23,4 +27,16 @@ type bridgeServiceStorage interface {
 	GetTokenWrapped(ctx context.Context, originalNetwork uint32, originalTokenAddress common.Address, dbTx interface{}) (*etherman.TokenWrapped, error)
 	GetRollupExitLeavesByRoot(ctx context.Context, root common.Hash, dbTx interface{}) ([]etherman.RollupExitLeaf, error)
 	GetPendingDepositsToClaim(ctx context.Context, destAddress common.Address, destNetwork, leafType, limit, offset uint32, dbTx interface{}) ([]*etherman.Deposit, uint64, error)
+
+	// XLayer
+	GetDepositByHash(ctx context.Context, destAddr string, networkID uint, txHash string, dbTx interface{}) (*etherman.Deposit, error)
+	GetDepositsXLayer(ctx context.Context, destAddr string, limit uint, offset uint, messageAllowlist []common.Address, dbTx interface{}) ([]*etherman.Deposit, error)
+	GetPendingTransactions(ctx context.Context, destAddr string, limit uint, offset uint, messageAllowlist []common.Address, dbTx interface{}) ([]*etherman.Deposit, error)
+	GetNotReadyTransactions(ctx context.Context, limit uint, offset uint, dbTx interface{}) ([]*etherman.Deposit, error)
+	GetReadyPendingTransactions(ctx context.Context, networkID uint, limit uint, offset uint, minReadyTime time.Time, dbTx interface{}) ([]*etherman.Deposit, error)
+	GetClaimTxById(ctx context.Context, id uint, dbTx interface{}) (*ctmtypes.MonitoredTx, error)
+	GetClaimTxsByStatusWithLimit(ctx context.Context, statuses []ctmtypes.MonitoredTxStatus, limit uint, offset uint, dbTx interface{}) ([]ctmtypes.MonitoredTx, error)
+	GetDepositsForUnitTest(ctx context.Context, destAddr string, limit uint, offset uint, dbTx interface{}) ([]*etherman.Deposit, error)
+	GetBridgeBalance(ctx context.Context, originalTokenAddr common.Address, networkID uint, forUpdate bool, dbTx interface{}) (*big.Int, error)
+	SetBridgeBalance(ctx context.Context, originalTokenAddr common.Address, networkID uint, balance *big.Int, dbTx interface{}) error
 }

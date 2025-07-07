@@ -9,7 +9,6 @@ import (
 	"github.com/0xPolygonHermez/zkevm-bridge-service/log"
 	"github.com/0xPolygonHermez/zkevm-bridge-service/utils/gerror"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/jackc/pgx/v4"
 	"github.com/pkg/errors"
 )
 
@@ -29,7 +28,7 @@ type MainCoinsCache interface {
 }
 
 type MainCoinsDBStorage interface {
-	GetAllMainCoins(ctx context.Context, limit uint, offset uint, dbTx pgx.Tx) ([]*pb.CoinInfo, error)
+	GetAllMainCoins(ctx context.Context, limit uint, offset uint, dbTx interface{}) ([]*pb.CoinInfo, error)
 }
 
 // mainCoinsCacheImpl implements the MainCoinsCache interface
