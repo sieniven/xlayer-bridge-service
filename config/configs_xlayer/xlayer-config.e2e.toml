@@ -6,6 +6,8 @@ Outputs = ["stdout"]
 [Etherman]
 L1URL = "http://zkevm-mock-l1-network:8545"
 L2URLs = ["http://zkevm-node:8123"]
+L1ChainId = 1337 # XLayer
+L2ChainIds = [195] # XLayer
 
 [ClaimTxManager]
 Enabled = true
