@@ -1,11 +1,17 @@
-# NOTE: Run with X Layer erigon
+# NOTE: For e2e test
 [Log]
-Level = "debug"
+Level = "info"
 Outputs = ["stdout"]
+
+[Etherman]
+L1URL = "http://zkevm-mock-l1-network:8545"
+L2URLs = ["http://zkevm-node:8123"]
+L1ChainId = 1337 # XLayer
+L2ChainIds = [195] # XLayer
 
 [ClaimTxManager]
 Enabled = true
-FreeGas = true
+FreeGas = false # Must disable otherwise tests will fail
 FrequencyToMonitorTxs = "1s"
 PrivateKey = {Path = "/pk/keystore.claimtxmanager", Password = "testonly"}
 RetryInterval = "1s"
@@ -24,28 +30,22 @@ AreClaimsBetweenL2sEnabled = false
     FrequencyToProcessCompressedClaims = "1m"
     GasOffset = 100000
 
+[SyncDB]
+Database = "postgres"
+    [SyncDB.PgStorage]
+    User = "test_user"
+    Password = "test_password"
+    Name = "test_db"
+    Host = "zkevm-bridge-db"
+    Port = "5432"
+    MaxConns = 20
+
 [Synchronizer]
 SyncInterval = "3s"
 SyncChunkSize = 100
 ForceL2SyncChunk = true
 
-[SyncDB]
-Database = "postgres"
-User = "test_user"
-Password = "test_password"
-Name = "test_db"
-Host = "zkevm-bridge-db"
-Port = "5432"
-MaxConns = 20
-
-[Etherman]
-L1URL = "http://xlayer-mock-l1-network:8545"
-L2URLs = ["http://xlayer-rpc:8545"] # internal network
-L1ChainId = 1337 # XLayer
-L2ChainIds = [195] # XLayer
-
 [BridgeController]
-Store = "postgres"
 Height = 32
 
 [BridgeServer]
@@ -57,12 +57,13 @@ MaxPageLimit = 100
 SentinelConfigFilePath = "/app/sentinel_config.json" # XLayer
     [BridgeServer.DB]
     Database = "postgres"
-    User = "test_user"
-    Password = "test_password"
-    Name = "test_db"
-    Host = "zkevm-bridge-db"
-    Port = "5432"
-    MaxConns = 20
+        [BridgeServer.DB.PgStorage]
+        User = "test_user"
+        Password = "test_password"
+        Name = "test_db"
+        Host = "zkevm-bridge-db"
+        Port = "5432"
+        MaxConns = 20
     [BridgeServer.Redis] # XLayer
     IsClusterMode = false
     Addrs = ["xlayer-bridge-redis:6379"]
@@ -73,21 +74,14 @@ SentinelConfigFilePath = "/app/sentinel_config.json" # XLayer
 
 [NetworkConfig]
 GenBlockNumber = 0
-PolygonBridgeAddress = "0x3a277Fa4E78cc1266F32E26c467F99A8eAEfF7c3"
-PolygonZkEVMGlobalExitRootAddress = "0xB8cedD4B9eF683f0887C44a6E4312dC7A6e2fcdB"
-PolygonRollupManagerAddress = "0x2d42E2899662EFf08b13eeb65b154b904C7a1c8a"
+PolygonBridgeAddress = "0xFe12ABaa190Ef0c8638Ee0ba9F828BF41368Ca0E"
+PolygonZkEVMGlobalExitRootAddress = "0x8A791620dd6260079BF849Dc5567aDC3F2FdC318"
+PolygonRollupManagerAddress = "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e"
 L2ClaimCompressorAddress = "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6"
-L2PolygonBridgeAddresses = ["0x3a277Fa4E78cc1266F32E26c467F99A8eAEfF7c3"]
+L2PolygonBridgeAddresses = ["0xFe12ABaa190Ef0c8638Ee0ba9F828BF41368Ca0E"]
 RequireSovereignChainSmcs = [false]
-L2PolygonZkEVMGlobalExitRootAddresses = ["0xB8cedD4B9eF683f0887C44a6E4312dC7A6e2fcdB"]
+L2PolygonZkEVMGlobalExitRootAddresses = ["0xa40d5f56745a118d0906a34e69aec8c0db1cb8fa"]
 
-[Metrics]
-Enabled = true
-Host = "0.0.0.0"
-Port = 9091
-Env = "testnet" # XLayer
-
-# XLayer specific
 [BusinessConfig]
 StandardChainIds = [195]
 InnerChainIds = [19500]

@@ -6,6 +6,8 @@ Outputs = ["stdout"]
 [Etherman]
 L1URL = "http://zkevm-mock-l1-network:8545"
 L2URLs = ["http://zkevm-node:8123"]
+L1ChainId = 1337 # XLayer
+L2ChainIds = [195] # XLayer
 
 [ClaimTxManager]
 Enabled = true
@@ -30,12 +32,13 @@ AreClaimsBetweenL2sEnabled = false
 
 [SyncDB]
 Database = "postgres"
-User = "test_user"
-Password = "test_password"
-Name = "test_db"
-Host = "zkevm-bridge-db"
-Port = "5432"
-MaxConns = 20
+    [SyncDB.PgStorage]
+    User = "test_user"
+    Password = "test_password"
+    Name = "test_db"
+    Host = "zkevm-bridge-db"
+    Port = "5432"
+    MaxConns = 20
 
 [Synchronizer]
 SyncInterval = "3s"
@@ -43,7 +46,6 @@ SyncChunkSize = 100
 ForceL2SyncChunk = true
 
 [BridgeController]
-Store = "postgres"
 Height = 32
 
 [BridgeServer]
@@ -55,12 +57,13 @@ MaxPageLimit = 100
 SentinelConfigFilePath = "/app/sentinel_config.json" # XLayer
     [BridgeServer.DB]
     Database = "postgres"
-    User = "test_user"
-    Password = "test_password"
-    Name = "test_db"
-    Host = "zkevm-bridge-db"
-    Port = "5432"
-    MaxConns = 20
+        [BridgeServer.DB.PgStorage]
+        User = "test_user"
+        Password = "test_password"
+        Name = "test_db"
+        Host = "zkevm-bridge-db"
+        Port = "5432"
+        MaxConns = 20
     [BridgeServer.Redis] # XLayer
     IsClusterMode = false
     Addrs = ["xlayer-bridge-redis:6379"]
