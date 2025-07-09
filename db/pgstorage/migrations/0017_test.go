@@ -10,7 +10,7 @@ import (
 type migrationTest0017 struct{}
 
 func (m migrationTest0017) InsertData(db *sql.DB) error {
-	block := "INSERT INTO sync.block (id, block_num, block_hash, network_id) VALUES(1, 2803824, decode('C9B5033799ADF3739383A0489EFBE8A0D4D5E4478778A4F4304562FD51AE4C07','hex'), 0);"
+	block := "INSERT INTO sync.block (id, block_num, block_hash, network_id, received_at) VALUES(1, 2803824, decode('C9B5033799ADF3739383A0489EFBE8A0D4D5E4478778A4F4304562FD51AE4C07','hex'), 0, '0001-01-01 01:00:00.000');" // XLayer retains `received_at` field
 	if _, err := db.Exec(block); err != nil {
 		return err
 	}

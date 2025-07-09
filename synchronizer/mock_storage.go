@@ -191,7 +191,7 @@ func (_c *storageMock_AddDeposit_Call) RunAndReturn(run func(context.Context, *e
 }
 
 // AddDepositXLayer provides a mock function with given fields: ctx, deposit, dbTx
-func (_m *storageMock) AddDepositXLayer(ctx context.Context, deposit *etherman.Deposit, dbTx pgx.Tx) (uint64, error) {
+func (_m *storageMock) AddDepositXLayer(ctx context.Context, deposit *etherman.Deposit, dbTx interface{}) (uint64, error) {
 	ret := _m.Called(ctx, deposit, dbTx)
 
 	if len(ret) == 0 {
@@ -200,16 +200,16 @@ func (_m *storageMock) AddDepositXLayer(ctx context.Context, deposit *etherman.D
 
 	var r0 uint64
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *etherman.Deposit, pgx.Tx) (uint64, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *etherman.Deposit, interface{}) (uint64, error)); ok {
 		return rf(ctx, deposit, dbTx)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *etherman.Deposit, pgx.Tx) uint64); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *etherman.Deposit, interface{}) uint64); ok {
 		r0 = rf(ctx, deposit, dbTx)
 	} else {
 		r0 = ret.Get(0).(uint64)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *etherman.Deposit, pgx.Tx) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, *etherman.Deposit, interface{}) error); ok {
 		r1 = rf(ctx, deposit, dbTx)
 	} else {
 		r1 = ret.Error(1)
@@ -226,14 +226,14 @@ type storageMock_AddDepositXLayer_Call struct {
 // AddDepositXLayer is a helper method to define mock.On call
 //   - ctx context.Context
 //   - deposit *etherman.Deposit
-//   - dbTx pgx.Tx
+//   - dbTx interface{}
 func (_e *storageMock_Expecter) AddDepositXLayer(ctx interface{}, deposit interface{}, dbTx interface{}) *storageMock_AddDepositXLayer_Call {
 	return &storageMock_AddDepositXLayer_Call{Call: _e.mock.On("AddDepositXLayer", ctx, deposit, dbTx)}
 }
 
-func (_c *storageMock_AddDepositXLayer_Call) Run(run func(ctx context.Context, deposit *etherman.Deposit, dbTx pgx.Tx)) *storageMock_AddDepositXLayer_Call {
+func (_c *storageMock_AddDepositXLayer_Call) Run(run func(ctx context.Context, deposit *etherman.Deposit, dbTx interface{})) *storageMock_AddDepositXLayer_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(*etherman.Deposit), args[2].(pgx.Tx))
+		run(args[0].(context.Context), args[1].(*etherman.Deposit), args[2].(interface{}))
 	})
 	return _c
 }
@@ -243,7 +243,7 @@ func (_c *storageMock_AddDepositXLayer_Call) Return(_a0 uint64, _a1 error) *stor
 	return _c
 }
 
-func (_c *storageMock_AddDepositXLayer_Call) RunAndReturn(run func(context.Context, *etherman.Deposit, pgx.Tx) (uint64, error)) *storageMock_AddDepositXLayer_Call {
+func (_c *storageMock_AddDepositXLayer_Call) RunAndReturn(run func(context.Context, *etherman.Deposit, interface{}) (uint64, error)) *storageMock_AddDepositXLayer_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -615,7 +615,7 @@ func (_c *storageMock_Commit_Call) RunAndReturn(run func(context.Context, interf
 }
 
 // GetBridgeBalance provides a mock function with given fields: ctx, originalTokenAddr, networkID, forUpdate, dbTx
-func (_m *storageMock) GetBridgeBalance(ctx context.Context, originalTokenAddr common.Address, networkID uint, forUpdate bool, dbTx pgx.Tx) (*big.Int, error) {
+func (_m *storageMock) GetBridgeBalance(ctx context.Context, originalTokenAddr common.Address, networkID uint, forUpdate bool, dbTx interface{}) (*big.Int, error) {
 	ret := _m.Called(ctx, originalTokenAddr, networkID, forUpdate, dbTx)
 
 	if len(ret) == 0 {
@@ -624,10 +624,10 @@ func (_m *storageMock) GetBridgeBalance(ctx context.Context, originalTokenAddr c
 
 	var r0 *big.Int
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, common.Address, uint, bool, pgx.Tx) (*big.Int, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, common.Address, uint, bool, interface{}) (*big.Int, error)); ok {
 		return rf(ctx, originalTokenAddr, networkID, forUpdate, dbTx)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, common.Address, uint, bool, pgx.Tx) *big.Int); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, common.Address, uint, bool, interface{}) *big.Int); ok {
 		r0 = rf(ctx, originalTokenAddr, networkID, forUpdate, dbTx)
 	} else {
 		if ret.Get(0) != nil {
@@ -635,7 +635,7 @@ func (_m *storageMock) GetBridgeBalance(ctx context.Context, originalTokenAddr c
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, common.Address, uint, bool, pgx.Tx) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, common.Address, uint, bool, interface{}) error); ok {
 		r1 = rf(ctx, originalTokenAddr, networkID, forUpdate, dbTx)
 	} else {
 		r1 = ret.Error(1)
@@ -654,14 +654,14 @@ type storageMock_GetBridgeBalance_Call struct {
 //   - originalTokenAddr common.Address
 //   - networkID uint
 //   - forUpdate bool
-//   - dbTx pgx.Tx
+//   - dbTx interface{}
 func (_e *storageMock_Expecter) GetBridgeBalance(ctx interface{}, originalTokenAddr interface{}, networkID interface{}, forUpdate interface{}, dbTx interface{}) *storageMock_GetBridgeBalance_Call {
 	return &storageMock_GetBridgeBalance_Call{Call: _e.mock.On("GetBridgeBalance", ctx, originalTokenAddr, networkID, forUpdate, dbTx)}
 }
 
-func (_c *storageMock_GetBridgeBalance_Call) Run(run func(ctx context.Context, originalTokenAddr common.Address, networkID uint, forUpdate bool, dbTx pgx.Tx)) *storageMock_GetBridgeBalance_Call {
+func (_c *storageMock_GetBridgeBalance_Call) Run(run func(ctx context.Context, originalTokenAddr common.Address, networkID uint, forUpdate bool, dbTx interface{})) *storageMock_GetBridgeBalance_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(common.Address), args[2].(uint), args[3].(bool), args[4].(pgx.Tx))
+		run(args[0].(context.Context), args[1].(common.Address), args[2].(uint), args[3].(bool), args[4].(interface{}))
 	})
 	return _c
 }
@@ -671,13 +671,13 @@ func (_c *storageMock_GetBridgeBalance_Call) Return(_a0 *big.Int, _a1 error) *st
 	return _c
 }
 
-func (_c *storageMock_GetBridgeBalance_Call) RunAndReturn(run func(context.Context, common.Address, uint, bool, pgx.Tx) (*big.Int, error)) *storageMock_GetBridgeBalance_Call {
+func (_c *storageMock_GetBridgeBalance_Call) RunAndReturn(run func(context.Context, common.Address, uint, bool, interface{}) (*big.Int, error)) *storageMock_GetBridgeBalance_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // GetDeposit provides a mock function with given fields: ctx, depositCounterUser, networkID, dbTx
-func (_m *storageMock) GetDeposit(ctx context.Context, depositCounterUser uint32, networkID uint32, dbTx pgx.Tx) (*etherman.Deposit, error) {
+func (_m *storageMock) GetDeposit(ctx context.Context, depositCounterUser uint32, networkID uint32, dbTx interface{}) (*etherman.Deposit, error) {
 	ret := _m.Called(ctx, depositCounterUser, networkID, dbTx)
 
 	if len(ret) == 0 {
@@ -686,10 +686,10 @@ func (_m *storageMock) GetDeposit(ctx context.Context, depositCounterUser uint32
 
 	var r0 *etherman.Deposit
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, uint32, uint32, pgx.Tx) (*etherman.Deposit, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, uint32, uint32, interface{}) (*etherman.Deposit, error)); ok {
 		return rf(ctx, depositCounterUser, networkID, dbTx)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, uint32, uint32, pgx.Tx) *etherman.Deposit); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, uint32, uint32, interface{}) *etherman.Deposit); ok {
 		r0 = rf(ctx, depositCounterUser, networkID, dbTx)
 	} else {
 		if ret.Get(0) != nil {
@@ -697,7 +697,7 @@ func (_m *storageMock) GetDeposit(ctx context.Context, depositCounterUser uint32
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, uint32, uint32, pgx.Tx) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, uint32, uint32, interface{}) error); ok {
 		r1 = rf(ctx, depositCounterUser, networkID, dbTx)
 	} else {
 		r1 = ret.Error(1)
@@ -715,14 +715,14 @@ type storageMock_GetDeposit_Call struct {
 //   - ctx context.Context
 //   - depositCounterUser uint32
 //   - networkID uint32
-//   - dbTx pgx.Tx
+//   - dbTx interface{}
 func (_e *storageMock_Expecter) GetDeposit(ctx interface{}, depositCounterUser interface{}, networkID interface{}, dbTx interface{}) *storageMock_GetDeposit_Call {
 	return &storageMock_GetDeposit_Call{Call: _e.mock.On("GetDeposit", ctx, depositCounterUser, networkID, dbTx)}
 }
 
-func (_c *storageMock_GetDeposit_Call) Run(run func(ctx context.Context, depositCounterUser uint32, networkID uint32, dbTx pgx.Tx)) *storageMock_GetDeposit_Call {
+func (_c *storageMock_GetDeposit_Call) Run(run func(ctx context.Context, depositCounterUser uint32, networkID uint32, dbTx interface{})) *storageMock_GetDeposit_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(uint32), args[2].(uint32), args[3].(pgx.Tx))
+		run(args[0].(context.Context), args[1].(uint32), args[2].(uint32), args[3].(interface{}))
 	})
 	return _c
 }
@@ -732,7 +732,7 @@ func (_c *storageMock_GetDeposit_Call) Return(_a0 *etherman.Deposit, _a1 error) 
 	return _c
 }
 
-func (_c *storageMock_GetDeposit_Call) RunAndReturn(run func(context.Context, uint32, uint32, pgx.Tx) (*etherman.Deposit, error)) *storageMock_GetDeposit_Call {
+func (_c *storageMock_GetDeposit_Call) RunAndReturn(run func(context.Context, uint32, uint32, interface{}) (*etherman.Deposit, error)) *storageMock_GetDeposit_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -1251,7 +1251,7 @@ func (_c *storageMock_Rollback_Call) RunAndReturn(run func(context.Context, inte
 }
 
 // SetBridgeBalance provides a mock function with given fields: ctx, originalTokenAddr, networkID, balance, dbTx
-func (_m *storageMock) SetBridgeBalance(ctx context.Context, originalTokenAddr common.Address, networkID uint, balance *big.Int, dbTx pgx.Tx) error {
+func (_m *storageMock) SetBridgeBalance(ctx context.Context, originalTokenAddr common.Address, networkID uint, balance *big.Int, dbTx interface{}) error {
 	ret := _m.Called(ctx, originalTokenAddr, networkID, balance, dbTx)
 
 	if len(ret) == 0 {
@@ -1259,7 +1259,7 @@ func (_m *storageMock) SetBridgeBalance(ctx context.Context, originalTokenAddr c
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, common.Address, uint, *big.Int, pgx.Tx) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, common.Address, uint, *big.Int, interface{}) error); ok {
 		r0 = rf(ctx, originalTokenAddr, networkID, balance, dbTx)
 	} else {
 		r0 = ret.Error(0)
@@ -1278,14 +1278,14 @@ type storageMock_SetBridgeBalance_Call struct {
 //   - originalTokenAddr common.Address
 //   - networkID uint
 //   - balance *big.Int
-//   - dbTx pgx.Tx
+//   - dbTx interface{}
 func (_e *storageMock_Expecter) SetBridgeBalance(ctx interface{}, originalTokenAddr interface{}, networkID interface{}, balance interface{}, dbTx interface{}) *storageMock_SetBridgeBalance_Call {
 	return &storageMock_SetBridgeBalance_Call{Call: _e.mock.On("SetBridgeBalance", ctx, originalTokenAddr, networkID, balance, dbTx)}
 }
 
-func (_c *storageMock_SetBridgeBalance_Call) Run(run func(ctx context.Context, originalTokenAddr common.Address, networkID uint, balance *big.Int, dbTx pgx.Tx)) *storageMock_SetBridgeBalance_Call {
+func (_c *storageMock_SetBridgeBalance_Call) Run(run func(ctx context.Context, originalTokenAddr common.Address, networkID uint, balance *big.Int, dbTx interface{})) *storageMock_SetBridgeBalance_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(common.Address), args[2].(uint), args[3].(*big.Int), args[4].(pgx.Tx))
+		run(args[0].(context.Context), args[1].(common.Address), args[2].(uint), args[3].(*big.Int), args[4].(interface{}))
 	})
 	return _c
 }
@@ -1295,7 +1295,7 @@ func (_c *storageMock_SetBridgeBalance_Call) Return(_a0 error) *storageMock_SetB
 	return _c
 }
 
-func (_c *storageMock_SetBridgeBalance_Call) RunAndReturn(run func(context.Context, common.Address, uint, *big.Int, pgx.Tx) error) *storageMock_SetBridgeBalance_Call {
+func (_c *storageMock_SetBridgeBalance_Call) RunAndReturn(run func(context.Context, common.Address, uint, *big.Int, interface{}) error) *storageMock_SetBridgeBalance_Call {
 	_c.Call.Return(run)
 	return _c
 }

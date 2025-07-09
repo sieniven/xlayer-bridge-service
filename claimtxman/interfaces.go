@@ -22,9 +22,21 @@ type StorageInterface interface {
 	Rollback(ctx context.Context, dbTx interface{}) error
 	BeginDBTransaction(ctx context.Context) (interface{}, error)
 	Commit(ctx context.Context, dbTx interface{}) error
+
+	// XLayer
+	UpdateL1DepositsStatusXLayer(ctx context.Context, exitRoot []byte, dbTx interface{}) ([]*etherman.Deposit, error)
+	UpdateL2DepositsStatusXLayer(ctx context.Context, exitRoot []byte, rollupID, networkID uint, dbTx interface{}) ([]*etherman.Deposit, error)
+	GetL1Deposits(ctx context.Context, exitRoot []byte, dbTx interface{}) ([]*etherman.Deposit, error)
+	UpdateL1DepositStatus(ctx context.Context, depositCount uint, dbTx interface{}) error
+	GetDeposit(ctx context.Context, depositCnt, networkID uint32, dbTx interface{}) (*etherman.Deposit, error)
+	GetClaim(ctx context.Context, index, depositCount, networkID uint32, dbTx interface{}) (*etherman.Claim, error)
+	GetClaimTxsByStatusWithLimit(ctx context.Context, statuses []types.MonitoredTxStatus, limit, offset uint, dbTx interface{}) ([]types.MonitoredTx, error)
 }
 
 type bridgeServiceInterface interface {
-	GetClaimProofForCompressed(ger common.Hash, depositCnt, networkID uint32, dbTx interface{}) (*etherman.GlobalExitRoot, [][bridgectrl.KeyLen]byte, [][bridgectrl.KeyLen]byte, error)
 	GetDepositStatus(ctx context.Context, depositCount, networkID, destNetworkID uint32) (string, error)
+	GetClaimProofForCompressed(ger common.Hash, depositCnt, networkID uint32, dbTx interface{}) (*etherman.GlobalExitRoot, [][bridgectrl.KeyLen]byte, [][bridgectrl.KeyLen]byte, error)
+
+	// From XLayer branch
+	GetClaimProof(depositCnt, networkID uint32, dbTx interface{}) (*etherman.GlobalExitRoot, [][bridgectrl.KeyLen]byte, [][bridgectrl.KeyLen]byte, error)
 }
