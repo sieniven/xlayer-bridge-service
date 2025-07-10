@@ -170,6 +170,11 @@ func runRestServer(ctx context.Context, grpcPort, httpPort string) error {
 	httpMux := http.NewServeMux()
 	httpMux.Handle(bridgeEndpointPath+"/", http.StripPrefix(bridgeEndpointPath, mux))
 	httpMux.Handle("/", mux)
+	routeCorrection := os.Getenv("BS_REROUTE_URI")
+	if routeCorrection != "" {
+		httpMux.Handle(routeCorrection+bridgeEndpointPath+"/", http.StripPrefix(routeCorrection+bridgeEndpointPath, mux))
+		log.Debugw("Bridge route correction", "routeCorrection", routeCorrection, "fullPath", routeCorrection+bridgeEndpointPath+"/")
+	}
 
 	if err := pb.RegisterBridgeServiceHandler(ctx, mux, conn); err != nil {
 		return err
