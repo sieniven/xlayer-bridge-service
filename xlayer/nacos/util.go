@@ -2,7 +2,6 @@ package nacos
 
 import (
 	"net"
-	"os"
 	"strconv"
 	"strings"
 
@@ -15,9 +14,6 @@ func resolveIPAndPort(addr string) (string, int, error) {
 	if ip == "127.0.0.1" {
 		const port = 26659
 		return getLocalIP(), port, nil
-	}
-	if ip == "$(MY_POD_IP)" {
-		ip = os.Getenv("MY_POD_IP")
 	}
 	port, err := strconv.Atoi(laddr[1])
 	if err != nil {
