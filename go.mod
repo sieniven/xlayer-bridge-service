@@ -31,7 +31,7 @@ require (
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.10.0
 	github.com/urfave/cli/v2 v2.27.6
-	gitlab.okg.com/okcoin-commons/ok-kms-go-client v1.0.1
+	gitlab.okg.com/okcoin-commons/ok-kms-go-client v1.0.4
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.35.0
 	golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa
