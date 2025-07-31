@@ -89,6 +89,8 @@ func runAPI(ctx context.Context, c *config.XLayerConfig) error {
 	messagebridge.InitWstETHProcessor(c.BusinessConfig.WstETHContractAddresses, c.BusinessConfig.WstETHTokenAddresses)
 	messagebridge.InitEURCProcessor(c.BusinessConfig.EURCContractAddresses, c.BusinessConfig.EURCTokenAddresses)
 
+	server.SetDisableRequestLogs(os.Getenv("DISABLE_API_REQ_LOGS") == "true")
+
 	redisStorage, err := redisstorage.NewRedisStorage(c.BridgeServer.Redis)
 	if err != nil {
 		return err

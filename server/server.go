@@ -92,12 +92,22 @@ func runGRPCServer(ctx context.Context, bridgeServer pb.BridgeServiceServer, por
 	}
 
 	// XLayer
-	server := grpc.NewServer(grpc.ChainUnaryInterceptor(
-		NewRequestMetricsInterceptor(),
-		sentinelGrpc.NewUnaryServerInterceptor(sentinelGrpc.WithUnaryServerBlockFallback(blockErrFallbackFn)),
-		NewRequestLogInterceptor(),
-		NewIPCheckInterceptor(),
-	))
+	var server *grpc.Server
+	if disableRequestLogs {
+		log.Warn("Disable Request logs")
+		server = grpc.NewServer(grpc.ChainUnaryInterceptor(
+			NewRequestMetricsInterceptor(),
+			sentinelGrpc.NewUnaryServerInterceptor(sentinelGrpc.WithUnaryServerBlockFallback(blockErrFallbackFn)),
+			NewIPCheckInterceptor(),
+		))
+	} else {
+		server = grpc.NewServer(grpc.ChainUnaryInterceptor(
+			NewRequestMetricsInterceptor(),
+			sentinelGrpc.NewUnaryServerInterceptor(sentinelGrpc.WithUnaryServerBlockFallback(blockErrFallbackFn)),
+			NewRequestLogInterceptor(),
+			NewIPCheckInterceptor(),
+		))
+	}
 	pb.RegisterBridgeServiceServer(server, bridgeServer)
 
 	healthService := newHealthChecker()

@@ -21,6 +21,14 @@ const (
 	ipRestrictionErrorMsg = "XLayer product isn't available in your region"
 )
 
+var (
+	disableRequestLogs = false
+)
+
+func SetDisableRequestLogs(flag bool) {
+	disableRequestLogs = flag
+}
+
 func NewRequestLogInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		startTime := time.Now()
