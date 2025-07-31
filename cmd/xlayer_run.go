@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"os"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/urfave/cli/v2"
@@ -70,8 +71,13 @@ func run(ctx *cli.Context, choice string) error {
 		if err = runAPI(ctx.Context, c); err != nil {
 			return err
 		}
-		if err = runPushTask(ctx.Context, c); err != nil {
-			return err
+		disablePush := os.Getenv("DISABLE_PUSH")
+		if disablePush == "true" {
+			log.Warn("Push Service will be disabled.")
+		} else {
+			if err = runPushTask(ctx.Context, c); err != nil {
+				return err
+			}
 		}
 		return runTask(ctx.Context, c) // Blocking
 	}
