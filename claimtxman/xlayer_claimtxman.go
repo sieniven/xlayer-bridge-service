@@ -167,7 +167,6 @@ func (tm *ClaimTxManager) monitorTxsXLayer(ctx context.Context) error {
 	mLog.Infof("found %v monitored tx to process", len(mTxs))
 	metrics.RecordPendingMonitoredTxsCount(len(mTxs))
 
-	isResetNonce := false // it will reset the nonce in one cycle
 	for _, mTx := range mTxs {
 		mTx := mTx // force variable shadowing to avoid pointer conflicts
 		mTxLog := mLog.WithFields("monitoredTx", mTx.DepositID)
@@ -351,21 +350,10 @@ func (tm *ClaimTxManager) monitorTxsXLayer(ctx context.Context) error {
 					mTxLog.Errorf("failed to send tx %s to network: %v", signedTx.Hash().String(), err)
 					if err.Error() == ErrNonceTooLow.Error() {
 						mTxLog.Infof("nonce error detected, Nonce used: %d", signedTx.Nonce())
-						if !isResetNonce {
-							isResetNonce = true
-							tm.nonceCache.Remove(mTx.From.Hex())
-							mTxLog.Infof("nonce cache cleared for address %v", mTx.From.Hex())
-						}
 					}
 					if err.Error() == ErrNonceTooHigh.Error() {
 						mTxLog.Infof("nonce error detected, Nonce used: %d", signedTx.Nonce())
-						if !isResetNonce {
-							isResetNonce = true
-							tm.nonceCache.Remove(mTx.From.Hex())
-							mTxLog.Infof("nonce cache cleared for address %v", mTx.From.Hex())
-						}
 					}
-					tm.nonceCache.decr(mTx.From)
 					mTx.RemoveHistory(signedTx)
 					// we should rebuild the monitored tx to fix the nonce
 					err := tm.ReviewMonitoredTxXLayer(ctx, &mTx)

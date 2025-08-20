@@ -403,9 +403,8 @@ func (tm *ClaimTxManager) pushTransactionUpdate(deposit *etherman.Deposit, statu
 
 // setTxNonce get the next nonce from the nonce cache and set it to the tx
 func (tm *ClaimTxManager) setTxNonce(mTx *ctmtypes.MonitoredTx) error {
-	var nonce uint64
-	var err error
-	if nonce, err = tm.nonceCache.GetNextNonce(mTx.From); err != nil {
+	nonce, err := tm.l2Node.PendingNonceAt(tm.ctx, mTx.From)
+	if err != nil {
 		return fmt.Errorf("getNextNonce failed = %v", err)
 	}
 	mTx.Nonce = nonce
